@@ -1,0 +1,107 @@
+name: CI/CD Python Typé + IA Français
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-and-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run MyPy (vérification des types)
+        run: python -m mypy main.py
+
+      - name: Run Ruff (linting)
+        run: python -m ruff check .
+
+      - name: Vérifier fautes de français dans le message de commit
+        id: check-french
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python - <<EOF
+          from openai import OpenAI
+          import os
+          import sys
+
+          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          commit_msg = """${{ github.event.head_commit.message }}"""
+
+          response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+              {"role": "system", "content": "Tu es un correcteur de français. Réponds uniquement 'OK' si le message est parfait. Sinon, réponds 'ERREUR: [liste des fautes]'."},
+              {"role": "user", "content": commit_msg}
+            ],
+            temperature=0
+          )
+          result = response.choices[0].message.content.strip()
+          print(result)
+          if result.startswith("ERREUR"):
+            print("Fautes détectées")
+            sys.exit(1)
+          else:
+            print("Français parfait !")
+          EOF
+
+      - name: Envoyer email de félicitations (si tout est OK)
+        if: success()
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          COMMITTER_EMAIL: ${{ github.event.head_commit.author.email }}
+        run: |
+          python - <<EOF
+          import os
+          from openai import OpenAI
+          from smtplib import SMTP
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+
+          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          committer = os.getenv("COMMITTER_EMAIL")
+          commit_msg = """${{ github.event.head_commit.message }}"""
+
+          # Génère un email personnalisé
+          response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+              {"role": "system", "content": "Tu es un assistant chaleureux. Génère un email de félicitations en français, professionnel mais amical, adapté à la culture du développeur. Utilise le prénom si possible."},
+              {"role": "user", "content": f"Message de commit: {commit_msg}\nEmail du committer: {committer}"}
+            ]
+          )
+          body = response.choices[0].message.content
+
+          msg = MIMEMultipart()
+          msg['From'] = os.getenv("EMAIL_USER")
+          msg['To'] = committer
+          msg['Subject'] = "Félicitations pour ton commit parfait !"
+
+          msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+          server = SMTP(os.getenv("EMAIL_HOST"), int(os.getenv("EMAIL_PORT")))
+          server.starttls()
+          server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+          server.send_message(msg)
+          server.quit()
+          print("Email envoyé avec succès !")
+          EOF
