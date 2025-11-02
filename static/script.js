@@ -17,13 +17,6 @@ let isLoading = false;
 document.addEventListener('DOMContentLoaded', () => {
     loadErrors();
     
-    // 🗣️ Message vocal de bienvenue au chargement
-    const welcomeMessage = "Bienvenue sur notre application monsieur";
-    const utterance = new SpeechSynthesisUtterance(welcomeMessage);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 1; // vitesse normale
-    speechSynthesis.speak(utterance);
-
     // Auto-resize du textarea
     userInput.addEventListener('input', () => {
         userInput.style.height = 'auto';
@@ -246,3 +239,4 @@ function addQuickSuggestions() {
         hintsDiv.appendChild(btn);
     });
 }
+
