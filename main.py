@@ -29,6 +29,11 @@ def divide_numbers(a: float, b: float) -> float:
     return a / b
 
 
+def fonction_sans_types(x, y):
+    """Fonction sans annotations de types - va générer une erreur MyPy."""
+    return x + y
+
+
 if __name__ == "__main__":
     print(add_numbers(2, 3))
     users = [{"name": "Alice"}, {"name": "Bob"}]
