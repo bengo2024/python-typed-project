@@ -124,7 +124,9 @@ class Order:
         """Retourne le nombre total d'articles."""
         return sum(item.quantity for item in self.items)
 
-    def to_dict(self) -> dict[str, str | int | float | list[dict[str, str | int | float]]]:
+    def to_dict(
+        self,
+    ) -> dict[str, str | int | float | list[dict[str, str | int | float]]]:
         """Convertit en dictionnaire."""
         return {
             "id": self.id,
@@ -162,4 +164,3 @@ class Review:
             "comment": self.comment,
             "created_at": self.created_at.isoformat(),
         }
-

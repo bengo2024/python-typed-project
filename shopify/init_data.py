@@ -2,7 +2,6 @@
 Script d'initialisation de la base de données avec des données de démonstration
 """
 
-
 import hashlib
 
 from shopify.database import Database
@@ -59,7 +58,7 @@ def init_demo_data() -> None:
     demo_products = [
         Product(
             id=0,
-            name="MacBook Pro 16\"",
+            name='MacBook Pro 16"',
             description="Ordinateur portable professionnel avec puce M3 Pro, 16 Go RAM, 512 Go SSD. Parfait pour le développement et la création de contenu.",
             price=2499.99,
             image_url="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
@@ -210,4 +209,3 @@ def init_demo_data() -> None:
 
 if __name__ == "__main__":
     init_demo_data()
-

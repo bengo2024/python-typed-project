@@ -201,7 +201,10 @@ Si l'utilisateur demande de corriger les erreurs :
             max_tokens=500,
         )
 
-        bot_message = response.choices[0].message.content or "Désolé, je n'ai pas pu générer de réponse."
+        bot_message = (
+            response.choices[0].message.content
+            or "Désolé, je n'ai pas pu générer de réponse."
+        )
 
         # Ajouter la réponse du bot à l'historique
         conversation_history.append({"role": "assistant", "content": bot_message})
