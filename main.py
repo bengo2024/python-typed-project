@@ -21,6 +21,14 @@ def multiply_numbers(x: int, y: int) -> int:
     """Multiplie deux nombres entiers."""
     return x * y
 
+
+def divide_numbers(a: float, b: float) -> float:
+    """Divise deux nombres flottants."""
+    if b == 0:
+        raise ValueError("Division par zéro impossible")
+    return a / b
+
+
 if __name__ == "__main__":
     print(add_numbers(2, 3))
     users = [{"name": "Alice"}, {"name": "Bob"}]
