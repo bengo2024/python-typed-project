@@ -1,5 +1,6 @@
-import os  # Import inutilisé pour tester Ruff
-import sys  # Import inutilisé pour tester Ruff
+import os  # Import inutilisé pour tester Discord
+import sys  # Import inutilisé pour tester Discord
+import json  # Encore un import inutilisé
 
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
@@ -35,8 +36,14 @@ def fonction_sans_types(x, y):
     return x + y
 
 
+def test_discord_notification(x, y):
+    """Fonction sans types pour tester Discord + MyPy."""
+    return x * y
+
+
 if __name__ == "__main__":
     print(add_numbers(2, 3))
     users = [{"name": "Alice"}, {"name": "Bob"}]
     print(process_users(users))
     print(greet_user("Charlie"))
+    print(test_discord_notification(5, 10))
