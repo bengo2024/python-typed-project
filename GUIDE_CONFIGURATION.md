@@ -36,7 +36,7 @@ Les secrets GitHub permettent de stocker des informations sensibles (clés API, 
 
 | Nom du Secret | Description | Exemple |
 |---------------|-------------|---------|
-| `OPENAI_API_KEY` | Clé API OpenAI | `sk-proj-...` |
+| `GROQ_API_KEY` | Clé API Groq (gratuit) | `gsk_...` |
 | `EMAIL_HOST` | Serveur SMTP Gmail | `smtp.gmail.com` |
 | `EMAIL_PORT` | Port SMTP | `587` |
 | `EMAIL_USER` | Votre adresse Gmail | `votre.email@gmail.com` |
@@ -49,8 +49,8 @@ Les secrets GitHub permettent de stocker des informations sensibles (clés API, 
 gh auth login
 
 # Ajouter les secrets
-gh secret set OPENAI_API_KEY
-# Collez votre clé API OpenAI quand demandé
+gh secret set GROQ_API_KEY
+# Collez votre clé API Groq quand demandé
 
 gh secret set EMAIL_HOST -b "smtp.gmail.com"
 gh secret set EMAIL_PORT -b "587"
@@ -86,26 +86,34 @@ Pour que le workflow puisse envoyer des emails, vous devez créer un **mot de pa
 
 ---
 
-## 🤖 Configuration de l'API OpenAI
+## 🤖 Configuration de l'API Groq (Gratuit !)
 
-### Obtenir une clé API OpenAI :
+### Obtenir une clé API Groq :
 
-1. Allez sur https://platform.openai.com/
-2. Créez un compte ou connectez-vous
-3. Allez dans **API Keys** : https://platform.openai.com/api-keys
-4. Cliquez sur **Create new secret key**
+1. Allez sur https://console.groq.com/
+2. Créez un compte (gratuit, pas de carte bancaire requise)
+3. Cliquez sur **API Keys** dans le menu de gauche
+4. Cliquez sur **Create API Key**
 5. Donnez un nom à la clé (ex: "GitHub Actions CI/CD")
-6. **Copiez la clé** (elle commence par `sk-proj-...`)
-7. Ajoutez-la comme secret GitHub `OPENAI_API_KEY`
+6. **Copiez la clé** (elle commence par `gsk_...`)
+7. Ajoutez-la comme secret GitHub `GROQ_API_KEY`
+
+### Pourquoi Groq ?
+
+- ✅ **100% gratuit** (pas de carte bancaire)
+- ✅ **Quota généreux** (14,400 requêtes/jour)
+- ✅ **Très rapide** (plus rapide qu'OpenAI)
+- ✅ **Modèle puissant** (Llama 3.1 70B)
+- ✅ **Compatible OpenAI** (même API)
 
 ### Vérifier que la clé fonctionne :
 
 ```bash
 # Créer un fichier .env local (NE PAS COMMITER)
-echo "OPENAI_API_KEY=sk-proj-..." > .env
+echo "GROQ_API_KEY=gsk_..." > .env
 
 # Tester la clé
-python test_openai.py
+python test_groq.py
 ```
 
 ---

@@ -42,18 +42,22 @@ jobs:
         id: check-french
         continue-on-error: true
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           python - <<EOF
           from openai import OpenAI
           import os
           import sys
 
-          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          # Utiliser Groq avec l'API compatible OpenAI
+          client = OpenAI(
+            api_key=os.getenv("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1"
+          )
           commit_msg = """${{ github.event.head_commit.message }}"""
 
           response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="llama-3.1-70b-versatile",
             messages=[
               {"role": "system", "content": "Tu es un correcteur de français. Réponds uniquement 'OK' si le message est parfait. Sinon, réponds 'ERREUR: [liste des fautes]'."},
               {"role": "user", "content": commit_msg}
@@ -77,7 +81,7 @@ jobs:
       - name: Envoyer email de félicitations (si tout est OK)
         if: success()
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
@@ -91,13 +95,17 @@ jobs:
           from email.mime.text import MIMEText
           from email.mime.multipart import MIMEMultipart
 
-          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          # Utiliser Groq avec l'API compatible OpenAI
+          client = OpenAI(
+            api_key=os.getenv("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1"
+          )
           committer = os.getenv("COMMITTER_EMAIL")
           commit_msg = """${{ github.event.head_commit.message }}"""
 
           # Génère un email personnalisé
           response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="llama-3.1-70b-versatile",
             messages=[
               {"role": "system", "content": "Tu es un assistant chaleureux. Génère un email de félicitations en français, professionnel mais amical, adapté à la culture du développeur. Utilise le prénom si possible."},
               {"role": "user", "content": f"Message de commit: {commit_msg}\nEmail du committer: {committer}"}
@@ -123,7 +131,7 @@ jobs:
       - name: Envoyer email de correction (si erreurs détectées)
         if: failure() || steps.mypy-check.outcome == 'failure' || steps.ruff-check.outcome == 'failure' || steps.check-french.outcome == 'failure'
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
@@ -138,7 +146,11 @@ jobs:
           from email.mime.text import MIMEText
           from email.mime.multipart import MIMEMultipart
 
-          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          # Utiliser Groq avec l'API compatible OpenAI
+          client = OpenAI(
+            api_key=os.getenv("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1"
+          )
           committer = os.getenv("COMMITTER_EMAIL")
           committer_name = os.getenv("COMMITTER_NAME", "Développeur")
           commit_msg = """${{ github.event.head_commit.message }}"""
@@ -185,7 +197,7 @@ jobs:
 
           # Générer un email personnalisé avec l'IA
           response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="llama-3.1-70b-versatile",
             messages=[
               {"role": "system", "content": f"Tu es un mentor bienveillant en développement. Génère un email en français pour {committer_name}, professionnel mais encourageant. Adapte le ton à la culture francophone (chaleureux, pédagogique). Explique les erreurs de manière simple, donne 2-3 conseils concrets pour corriger, et termine par une phrase motivante. Maximum 250 mots."},
               {"role": "user", "content": f"Rapport d'erreurs:\n{error_report}"}
