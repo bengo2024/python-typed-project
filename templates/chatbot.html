@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Chatbot CI/CD Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🤖 Assistant CI/CD Intelligent</h1>
+                <p>Discutez avec l'IA pour comprendre et corriger vos erreurs de code</p>
+            </div>
+            <div class="header-actions">
+                <button id="refresh-errors" class="btn btn-secondary">🔄 Actualiser</button>
+                <button id="reset-chat" class="btn btn-secondary">🗑️ Nouvelle conversation</button>
+            </div>
+        </header>
+
+        <!-- Zone principale -->
+        <div class="main-content">
+            <!-- Panneau des erreurs -->
+            <aside class="errors-panel">
+                <h2>📊 Erreurs Détectées</h2>
+                <div id="errors-summary" class="errors-summary">
+                    <div class="loading">Chargement...</div>
+                </div>
+                
+                <div class="errors-details">
+                    <div class="error-section">
+                        <h3>🔍 MyPy (Types)</h3>
+                        <pre id="mypy-errors" class="error-output">Aucune erreur</pre>
+                    </div>
+                    
+                    <div class="error-section">
+                        <h3>✨ Ruff (Style)</h3>
+                        <pre id="ruff-errors" class="error-output">Aucune erreur</pre>
+                    </div>
+                </div>
+
+                <button id="autofix-btn" class="btn btn-primary btn-large">
+                    🔧 Auto-Fix (Corriger automatiquement)
+                </button>
+            </aside>
+
+            <!-- Zone de chat -->
+            <main class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Message de bienvenue -->
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                <p>👋 Bonjour ! Je suis votre assistant CI/CD intelligent.</p>
+                                <p>Je peux vous aider à :</p>
+                                <ul>
+                                    <li>📊 Analyser les erreurs de votre code</li>
+                                    <li>💡 Expliquer chaque erreur en détail</li>
+                                    <li>🔧 Proposer des corrections</li>
+                                    <li>✅ Corriger automatiquement certaines erreurs</li>
+                                </ul>
+                                <p><strong>Posez-moi une question pour commencer !</strong></p>
+                            </div>
+                            <div class="message-time"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone de saisie -->
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea 
+                            id="user-input" 
+                            placeholder="Posez votre question... (Ex: Quelles sont les erreurs ? Explique-moi l'erreur MyPy)"
+                            rows="1"
+                        ></textarea>
+                        <button id="send-btn" class="btn btn-primary">
+                            <span class="send-icon">📤</span>
+                            <span class="send-text">Envoyer</span>
+                        </button>
+                    </div>
+                    <div class="input-hints">
+                        💡 Suggestions : "Quelles erreurs ?", "Explique MyPy", "Comment corriger ?"
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Auto-Fix -->
+    <div id="autofix-modal" class="modal">
+        <div class="modal-content">
+            <h2>🔧 Auto-Fix en cours...</h2>
+            <div class="modal-body">
+                <div class="loading-spinner"></div>
+                <p id="autofix-status">Application des corrections automatiques...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+

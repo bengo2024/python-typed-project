@@ -1,6 +1,7 @@
-# Dépendances pour le bot Discord
-discord.py>=2.3.0
+# Dépendances pour le chatbot web et Discord
+flask>=3.0.0
 openai>=1.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
+discord.py>=2.3.0
 
