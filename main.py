@@ -1,6 +1,7 @@
-import os  # Import inutilisé pour tester Discord
-import sys  # Import inutilisé pour tester Discord
+import os  # Import inutilisé pour tester le chatbot
+import sys  # Import inutilisé pour tester le chatbot
 import json  # Encore un import inutilisé
+import random  # Un quatrième import inutilisé
 
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""

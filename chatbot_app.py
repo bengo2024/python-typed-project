@@ -4,14 +4,26 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from openai import OpenAI
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 app = Flask(__name__)
 
 # Configuration
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 REPO_PATH = Path(__file__).parent
+
+# Vérifier que la clé API est définie
+if not GROQ_API_KEY:
+    print("❌ ERREUR: La clé GROQ_API_KEY n'est pas définie !")
+    print("📝 Créez un fichier .env avec :")
+    print("   GROQ_API_KEY=gsk_votre_clé_ici")
+    print("🔑 Obtenez votre clé sur : https://console.groq.com/keys")
+    exit(1)
 
 # Client Groq
 groq_client = OpenAI(
