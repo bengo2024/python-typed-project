@@ -77,4 +77,3 @@ exit 0
 
 if __name__ == "__main__":
     install_pre_push_hook()
-

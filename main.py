@@ -1,5 +1,3 @@
-
-
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
     return a + b

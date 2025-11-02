@@ -33,11 +33,19 @@ def count_errors(output: str, tool: str) -> int:
         return output.count("error:")
     elif tool == "ruff":
         lines = output.split("\n")
-        return len([line for line in lines if ":" in line and any(c in line for c in ["F", "E", "W", "I"])])
+        return len(
+            [
+                line
+                for line in lines
+                if ":" in line and any(c in line for c in ["F", "E", "W", "I"])
+            ]
+        )
     return 0
 
 
-def generate_error_report(mypy_output: str, ruff_output: str, mypy_errors: int, ruff_errors: int) -> str:
+def generate_error_report(
+    mypy_output: str, ruff_output: str, mypy_errors: int, ruff_errors: int
+) -> str:
     """Génère un rapport d'erreurs formaté."""
     total_errors = mypy_errors + ruff_errors
 
@@ -138,34 +146,34 @@ def send_error_email(report: str, branch_name: str) -> bool:
         user_name = user_name.strip() if returncode == 0 else "Développeur"
 
         # Générer un message personnalisé avec l'IA
-        client = OpenAI(
-            api_key=groq_api_key,
-            base_url="https://api.groq.com/openai/v1"
-        )
+        client = OpenAI(api_key=groq_api_key, base_url="https://api.groq.com/openai/v1")
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
-                    "content": f"Tu es un mentor bienveillant en développement. Génère un email court (100 mots max) en français pour {user_name}, professionnel mais encourageant. Explique que son push a été bloqué car il y a des erreurs, et qu'il doit les corriger avant de pouvoir push. Mentionne le chatbot Auto-Fix comme solution rapide. Ton message doit être motivant, pas décourageant."
+                    "content": f"Tu es un mentor bienveillant en développement. Génère un email court (100 mots max) en français pour {user_name}, professionnel mais encourageant. Explique que son push a été bloqué car il y a des erreurs, et qu'il doit les corriger avant de pouvoir push. Mentionne le chatbot Auto-Fix comme solution rapide. Ton message doit être motivant, pas décourageant.",
                 },
                 {
                     "role": "user",
-                    "content": f"Branche: {branch_name}\n\nRapport:\n{report}"
-                }
+                    "content": f"Branche: {branch_name}\n\nRapport:\n{report}",
+                },
             ],
             temperature=0.7,
-            max_tokens=200
+            max_tokens=200,
         )
 
-        ai_message = response.choices[0].message.content or "Ton push a été bloqué car des erreurs ont été détectées."
+        ai_message = (
+            response.choices[0].message.content
+            or "Ton push a été bloqué car des erreurs ont été détectées."
+        )
 
         # Créer l'email
         msg = MIMEMultipart()
-        msg['From'] = email_user
-        msg['To'] = user_email
-        msg['Subject'] = f"🚫 Push Bloqué - Corrections Nécessaires ({branch_name})"
+        msg["From"] = email_user
+        msg["To"] = user_email
+        msg["Subject"] = f"🚫 Push Bloqué - Corrections Nécessaires ({branch_name})"
 
         full_body = f"""{ai_message}
 
@@ -187,7 +195,7 @@ pour les erreurs MyPy.
 🤖 Généré automatiquement par le système Pre-Push
 """
 
-        msg.attach(MIMEText(full_body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(full_body, "plain", "utf-8"))
 
         # Envoyer l'email
         server = SMTP(email_host, int(email_port))
@@ -206,12 +214,14 @@ pour les erreurs MyPy.
 
 def main() -> int:
     """Fonction principale du pre-push check."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("🔍 VÉRIFICATION PRE-PUSH")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     # Obtenir le nom de la branche
-    returncode, branch_name, _ = run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    returncode, branch_name, _ = run_command(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+    )
     branch_name = branch_name.strip() if returncode == 0 else "unknown"
 
     print(f"🌿 Branche : {branch_name}")
@@ -219,7 +229,9 @@ def main() -> int:
 
     # Exécuter MyPy
     print("🔍 Vérification MyPy...")
-    mypy_returncode, mypy_stdout, mypy_stderr = run_command(["python", "-m", "mypy", "."])
+    mypy_returncode, mypy_stdout, mypy_stderr = run_command(
+        ["python", "-m", "mypy", "."]
+    )
     mypy_output = mypy_stdout + mypy_stderr
     mypy_errors = count_errors(mypy_output, "mypy")
 
@@ -230,7 +242,9 @@ def main() -> int:
 
     # Exécuter Ruff
     print("✨ Vérification Ruff...")
-    ruff_returncode, ruff_stdout, ruff_stderr = run_command(["python", "-m", "ruff", "check", "."])
+    ruff_returncode, ruff_stdout, ruff_stderr = run_command(
+        ["python", "-m", "ruff", "check", "."]
+    )
     ruff_output = ruff_stdout + ruff_stderr
     ruff_errors = count_errors(ruff_output, "ruff")
 
@@ -241,32 +255,33 @@ def main() -> int:
 
     total_errors = mypy_errors + ruff_errors
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
 
     if total_errors == 0:
         print("✅ PUSH AUTORISÉ - Aucune erreur détectée")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
         return 0
     else:
         print(f"🚫 PUSH BLOQUÉ - {total_errors} erreur(s) détectée(s)")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
         # Générer le rapport
-        report = generate_error_report(mypy_output, ruff_output, mypy_errors, ruff_errors)
+        report = generate_error_report(
+            mypy_output, ruff_output, mypy_errors, ruff_errors
+        )
         print(report)
 
         # Envoyer l'email
         print("\n📧 Envoi de l'email de notification...")
         send_error_email(report, branch_name)
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("💡 CONSEIL : Utilisez le chatbot Auto-Fix pour corriger rapidement")
         print("   python chatbot_app.py")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
         return 1
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

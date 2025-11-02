@@ -2,8 +2,21 @@
 Script d'initialisation de la base de données avec des données de démonstration
 """
 
-
 import hashlib
+import secrets
+
+
+# import hashlib
+
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    return (
+        hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100000).hex()
+        + ":"
+        + salt
+    )
+
 
 from shopify.database import Database
 from shopify.models import Product, User, UserRole
@@ -22,7 +35,7 @@ def init_demo_data() -> None:
 
     # Créer un utilisateur admin
     admin = User(
-        id=0,
+        # id=0,
         email="admin@shopify.com",
         password_hash=hash_password("admin123"),
         first_name="Admin",
@@ -40,7 +53,7 @@ def init_demo_data() -> None:
 
     # Créer un utilisateur client
     customer = User(
-        id=0,
+        # id=0,
         email="client@example.com",
         password_hash=hash_password("client123"),
         first_name="Jean",
@@ -58,8 +71,8 @@ def init_demo_data() -> None:
     # Produits de démonstration
     demo_products = [
         Product(
-            id=0,
-            name="MacBook Pro 16\"",
+            #   id=0,
+            name='MacBook Pro 16"',
             description="Ordinateur portable professionnel avec puce M3 Pro, 16 Go RAM, 512 Go SSD. Parfait pour le développement et la création de contenu.",
             price=2499.99,
             image_url="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
@@ -69,7 +82,7 @@ def init_demo_data() -> None:
             reviews_count=127,
         ),
         Product(
-            id=0,
+            #   id=0,
             name="iPhone 15 Pro",
             description="Smartphone haut de gamme avec puce A17 Pro, appareil photo 48MP, écran Super Retina XDR 6.1 pouces.",
             price=1199.99,
@@ -80,7 +93,7 @@ def init_demo_data() -> None:
             reviews_count=342,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="AirPods Pro 2",
             description="Écouteurs sans fil avec réduction de bruit active, audio spatial, jusqu'à 6h d'autonomie.",
             price=279.99,
@@ -91,7 +104,7 @@ def init_demo_data() -> None:
             reviews_count=89,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="Nike Air Max 2024",
             description="Chaussures de sport confortables avec amorti Air Max, design moderne et respirant.",
             price=159.99,
@@ -102,7 +115,7 @@ def init_demo_data() -> None:
             reviews_count=156,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="Sac à dos Eastpak",
             description="Sac à dos résistant 24L, compartiment laptop, garantie 30 ans. Idéal pour l'école ou le travail.",
             price=79.99,
@@ -113,7 +126,7 @@ def init_demo_data() -> None:
             reviews_count=78,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="Montre Casio G-Shock",
             description="Montre sport résistante aux chocs, étanche 200m, chronomètre, alarme, rétroéclairage LED.",
             price=129.99,
@@ -124,7 +137,7 @@ def init_demo_data() -> None:
             reviews_count=234,
         ),
         Product(
-            id=0,
+            #   id=0,
             name="PlayStation 5",
             description="Console de jeu nouvelle génération avec SSD ultra-rapide, ray tracing, 4K 120fps.",
             price=499.99,
@@ -135,7 +148,7 @@ def init_demo_data() -> None:
             reviews_count=567,
         ),
         Product(
-            id=0,
+            # id=0,
             name="Manette DualSense",
             description="Manette sans fil pour PS5 avec retour haptique, gâchettes adaptatives, micro intégré.",
             price=69.99,
@@ -146,7 +159,7 @@ def init_demo_data() -> None:
             reviews_count=189,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="Casque Gaming HyperX",
             description="Casque gaming avec son surround 7.1, micro antibruit, coussinets en mousse à mémoire de forme.",
             price=99.99,
@@ -157,7 +170,7 @@ def init_demo_data() -> None:
             reviews_count=145,
         ),
         Product(
-            id=0,
+            #  id=0,
             name="Kindle Paperwhite",
             description="Liseuse électronique avec écran 6.8 pouces, éclairage réglable, étanche IPX8, 16 Go.",
             price=149.99,
@@ -168,7 +181,7 @@ def init_demo_data() -> None:
             reviews_count=892,
         ),
         Product(
-            id=0,
+            # id=0,
             name="Caméra GoPro Hero 12",
             description="Caméra d'action 5.3K60, stabilisation HyperSmooth 6.0, étanche 10m, écran tactile.",
             price=399.99,
@@ -179,7 +192,7 @@ def init_demo_data() -> None:
             reviews_count=267,
         ),
         Product(
-            id=0,
+            # id=0,
             name="Clavier Mécanique Logitech",
             description="Clavier gaming mécanique RGB, switches tactiles, repose-poignet, touches programmables.",
             price=149.99,
@@ -192,7 +205,7 @@ def init_demo_data() -> None:
     ]
 
     # Ajouter les produits s'ils n'existent pas déjà
-    existing_products = db.get_all_products()
+    existing_products = db.get_products()  # ou db.list_products()
 
     if len(existing_products) == 0:
         for product in demo_products:
@@ -210,4 +223,3 @@ def init_demo_data() -> None:
 
 if __name__ == "__main__":
     init_demo_data()
-
