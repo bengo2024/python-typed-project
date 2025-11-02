@@ -14,12 +14,12 @@ def process_users(users: list[dict[str, str]]) -> str | None:
         return None
     return f"Nombre d'utilisateurs : {len(users)}"
 
-
-def greet_user(name: str, language: str = "fr") -> str:
-    """Salutation typée en français par défaut."""
+def greet_user(name, language = "fr"):
+    """Salutation en français par défaut."""
     if language == "fr":
         return f"Bonjour, {name} !"
     return f"Hello, {name} !"
+
 
 
 def multiply_numbers(x: int, y: int) -> int:
