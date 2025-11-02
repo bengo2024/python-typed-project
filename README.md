@@ -1,6 +1,10 @@
 # 🚀 Projet Python Typé avec CI/CD Automatisé
 
-[![CI/CD Python Typé + IA Français](https://github.com/VOTRE_USERNAME/python-typed-project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/VOTRE_USERNAME/python-typed-project/actions/workflows/ci-cd.yml)
+[![CI/CD Status](https://github.com/bengo2024/python-typed-project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/bengo2024/python-typed-project/actions/workflows/ci-cd.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
+[![AI: Groq](https://img.shields.io/badge/AI-Groq%20Llama%203.3-orange.svg)](https://groq.com/)
 
 ## 📝 Description
 
@@ -8,10 +12,12 @@ Projet Python démontrant un système CI/CD complet et automatisé avec GitHub A
 
 - ✅ **Vérification des types** avec MyPy (toutes les fonctions annotées)
 - ✅ **Contrôle du style** avec Ruff (pas d'imports inutilisés, lignes ≤ 88 caractères)
-- ✅ **Analyse du français** via OpenAI GPT-3.5 pour des messages de commit impeccables
-- ✅ **Emails personnalisés** envoyés automatiquement (félicitations ou corrections)
+- ✅ **Analyse du français** via Groq AI (Llama 3.3) pour des messages de commit impeccables
+- ✅ **Emails personnalisés** avec suggestions de correction IA
+- ✅ **Rapports HTML** des erreurs en pièce jointe
+- ✅ **Auto-Fix automatique** avec Pull Request
+- ✅ **Chatbot Discord** pour expliquer les erreurs et déclencher les corrections
 - ✅ **Sécurité** avec GitHub Secrets pour les clés API
-- ✅ **Collaboration** via branches et Pull Requests
 
 ## 🎯 Objectif
 
@@ -22,10 +28,11 @@ Garantir un code propre, typé, lisible, avec des messages de commit en françai
 - **Python 3.10+**
 - **MyPy** - Vérification statique des types
 - **Ruff** - Linter et formateur ultra-rapide
-- **OpenAI API** (GPT-3.5-turbo) - Analyse du français et génération d'emails
-- **GitHub Actions** - CI/CD automatisé
-- **SMTP Gmail** - Envoi d'emails
-- **GitHub CLI** - Gestion des secrets et workflows
+- **Groq API** (Llama 3.3 70B) - Analyse du français et génération d'emails IA
+- **GitHub Actions** - CI/CD automatisé avec auto-fix
+- **SMTP Gmail** - Envoi d'emails avec pièces jointes HTML
+- **Discord Bot** - Chatbot interactif pour expliquer les erreurs
+- **GitHub CLI** - Gestion des secrets et création de PR automatiques
 
 ## 📦 Installation
 

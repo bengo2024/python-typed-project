@@ -78,6 +78,89 @@ jobs:
             print("Français parfait !")
           EOF
 
+      - name: Générer rapport HTML
+        if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMITTER_NAME: ${{ github.event.head_commit.author.name }}
+        run: |
+          python generate_html_report.py
+
+      - name: Envoyer notification Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMITTER_NAME: ${{ github.event.head_commit.author.name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python send_discord_notification.py || true
+
+      - name: Auto-Fix et créer Pull Request
+        if: failure() || steps.mypy-check.outcome == 'failure' || steps.ruff-check.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configurer Git
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci-bot@github.com"
+
+          # Créer une branche pour les corrections
+          BRANCH_NAME="auto-fix/$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+
+          # Appliquer les corrections automatiques
+          python auto_fix.py || true
+
+          # Vérifier s'il y a des changements
+          if git diff --quiet; then
+            echo "⚠️ Aucune correction automatique n'a pu être appliquée"
+            exit 0
+          fi
+
+          # Committer les changements
+          git add .
+          git commit -m "🤖 Auto-fix: Corrections automatiques des erreurs Ruff
+
+          Corrections appliquées automatiquement par le CI/CD:
+          - Suppression des imports inutilisés
+          - Correction du formatage du code
+          - Tri des imports
+
+          Généré automatiquement par GitHub Actions"
+
+          # Pousser la branche
+          git push origin "$BRANCH_NAME"
+
+          # Créer une Pull Request avec GitHub CLI
+          gh pr create \
+            --title "🤖 Auto-Fix: Corrections automatiques" \
+            --body "## 🤖 Corrections Automatiques
+
+          Ce PR a été créé automatiquement par le système CI/CD.
+
+          ### ✅ Corrections appliquées:
+          - Suppression des imports inutilisés
+          - Formatage du code selon les standards Ruff
+          - Tri des imports
+
+          ### 📊 Détails:
+          - **Commit original**: ${{ github.event.head_commit.message }}
+          - **Auteur**: ${{ github.event.head_commit.author.name }}
+          - **Branche**: \`$BRANCH_NAME\`
+
+          ### 🔍 Actions requises:
+          - [ ] Vérifier les changements
+          - [ ] Merger si tout est OK
+          - [ ] Corriger manuellement les erreurs MyPy (si présentes)
+
+          ---
+          🤖 Généré automatiquement par GitHub Actions" \
+            --base main \
+            --head "$BRANCH_NAME"
+
+          echo "✅ Pull Request créée avec succès!"
+
       - name: Envoyer email de félicitations (si tout est OK)
         if: success()
         env:
@@ -145,6 +228,8 @@ jobs:
           from smtplib import SMTP
           from email.mime.text import MIMEText
           from email.mime.multipart import MIMEMultipart
+          from email.mime.base import MIMEBase
+          from email import encoders
 
           # Utiliser Groq avec l'API compatible OpenAI
           client = OpenAI(
@@ -195,11 +280,31 @@ jobs:
           {french_errors if french_errors else "✅ Aucune erreur"}
           """
 
+          # Générer suggestions de correction avec l'IA
+          suggestions_prompt = f"""Analyse ces erreurs et génère des suggestions de correction concrètes avec des exemples de code.
+          Pour chaque erreur, montre:
+          ❌ Code actuel (avec l'erreur)
+          ✅ Code corrigé (suggestion)
+
+          Erreurs:\n{error_report}
+
+          Format: Utilise des blocs de code Python clairs et concis."""
+
+          suggestions_response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+              {"role": "system", "content": "Tu es un expert Python. Génère des suggestions de correction avec des exemples de code avant/après."},
+              {"role": "user", "content": suggestions_prompt}
+            ],
+            temperature=0.3
+          )
+          code_suggestions = suggestions_response.choices[0].message.content
+
           # Générer un email personnalisé avec l'IA
           response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-              {"role": "system", "content": f"Tu es un mentor bienveillant en développement. Génère un email en français pour {committer_name}, professionnel mais encourageant. Adapte le ton à la culture francophone (chaleureux, pédagogique). Explique les erreurs de manière simple, donne 2-3 conseils concrets pour corriger, et termine par une phrase motivante. Maximum 250 mots."},
+              {"role": "system", "content": f"Tu es un mentor bienveillant en développement. Génère un email en français pour {committer_name}, professionnel mais encourageant. Adapte le ton à la culture francophone (chaleureux, pédagogique). Explique les erreurs de manière simple, mentionne qu'il y a des suggestions de code ci-dessous, et termine par une phrase motivante. Maximum 200 mots."},
               {"role": "user", "content": f"Rapport d'erreurs:\n{error_report}"}
             ],
             temperature=0.7
@@ -211,9 +316,32 @@ jobs:
           msg['To'] = committer
           msg['Subject'] = f"⚠️ Corrections nécessaires pour ton commit - {committer_name}"
 
-          # Ajouter le corps de l'email + le rapport détaillé
-          full_body = f"{body}\n\n{'='*60}\nRAPPORT DÉTAILLÉ:\n{'='*60}\n{error_report}"
+          # Ajouter le corps de l'email + suggestions + rapport détaillé
+          full_body = f"""{body}
+
+          {'='*60}
+          💡 SUGGESTIONS DE CORRECTION:
+          {'='*60}
+          {code_suggestions}
+
+          {'='*60}
+          📊 RAPPORT DÉTAILLÉ:
+          {'='*60}
+          {error_report}
+          """
           msg.attach(MIMEText(full_body, 'plain', 'utf-8'))
+
+          # Joindre le rapport HTML
+          try:
+            with open("ci_report.html", "rb") as f:
+              part = MIMEBase("application", "octet-stream")
+              part.set_payload(f.read())
+              encoders.encode_base64(part)
+              part.add_header("Content-Disposition", "attachment; filename=ci_report.html")
+              msg.attach(part)
+              print("✅ Rapport HTML joint à l'email")
+          except Exception as e:
+            print(f"⚠️ Impossible de joindre le rapport HTML: {e}")
 
           server = SMTP(os.getenv("EMAIL_HOST"), int(os.getenv("EMAIL_PORT")))
           server.starttls()
