@@ -1,4 +1,5 @@
 """Application web Flask pour le chatbot CI/CD interactif."""
+
 import os
 import subprocess
 from datetime import datetime
@@ -7,6 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from openai import OpenAI
+
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -26,10 +28,7 @@ if not GROQ_API_KEY:
     exit(1)
 
 # Client Groq
-groq_client = OpenAI(
-    api_key=GROQ_API_KEY,
-    base_url="https://api.groq.com/openai/v1"
-)
+groq_client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # Stocker l'historique de conversation
 conversation_history: list[dict[str, str]] = []
@@ -44,7 +43,9 @@ def run_command(command: str) -> tuple[str, int]:
             capture_output=True,
             text=True,
             cwd=REPO_PATH,
-            timeout=30
+            timeout=30,
+            encoding="utf-8",
+            errors="replace"  # Remplace les caractères invalides au lieu de crasher
         )
         return result.stdout + result.stderr, result.returncode
     except Exception as e:
@@ -53,11 +54,7 @@ def run_command(command: str) -> tuple[str, int]:
 
 def get_current_errors() -> dict[str, str]:
     """Récupère les erreurs actuelles du code."""
-    errors = {
-        "mypy": "",
-        "ruff": "",
-        "summary": ""
-    }
+    errors = {"mypy": "", "ruff": "", "summary": ""}
 
     # Exécuter MyPy
     mypy_output, _ = run_command("python -m mypy . --ignore-missing-imports")
@@ -71,7 +68,11 @@ def get_current_errors() -> dict[str, str]:
 
     # Créer un résumé
     mypy_count = mypy_output.count("error:")
-    ruff_lines = [line for line in ruff_output.split("\n") if ":" in line and any(c in line for c in ["F", "E", "W", "I"])]
+    ruff_lines = [
+        line
+        for line in ruff_output.split("\n")
+        if ":" in line and any(c in line for c in ["F", "E", "W", "I"])
+    ]
     ruff_count = len(ruff_lines)
 
     if mypy_count > 0 or ruff_count > 0:
@@ -105,7 +106,9 @@ def trigger_autofix() -> dict[str, str]:
     if diff_output.strip():
         # Il y a des changements, on commit et push
         run_command("git add .")
-        commit_output, _ = run_command(f'git commit -m "🤖 Auto-Fix: Corrections automatiques via chatbot"')
+        commit_output, _ = run_command(
+            'git commit -m "🤖 Auto-Fix: Corrections automatiques via chatbot"'
+        )
         push_output, push_code = run_command(f"git push origin {branch_name}")
 
         # Retourner à main
@@ -115,13 +118,13 @@ def trigger_autofix() -> dict[str, str]:
             return {
                 "success": True,
                 "message": f"✅ Corrections appliquées avec succès !\n\n📝 Changements :\n{ruff_output}\n\n🌿 Branche créée : {branch_name}\n\n🔗 Créez une Pull Request sur GitHub pour merger ces corrections.",
-                "branch": branch_name
+                "branch": branch_name,
             }
         else:
             return {
                 "success": False,
                 "message": f"❌ Erreur lors du push de la branche.\n\n{push_output}",
-                "branch": None
+                "branch": None,
             }
     else:
         # Pas de changements, retourner à main
@@ -130,7 +133,7 @@ def trigger_autofix() -> dict[str, str]:
         return {
             "success": False,
             "message": "ℹ️ Aucune correction automatique disponible.\n\n✨ Ruff n'a trouvé aucune erreur à corriger automatiquement.\n\n⚠️ Les erreurs MyPy nécessitent une correction manuelle car elles concernent les types.",
-            "branch": None
+            "branch": None,
         }
 
 
@@ -150,10 +153,7 @@ def chat() -> dict:
         return jsonify({"error": "Message vide"}), 400
 
     # Ajouter le message de l'utilisateur à l'historique
-    conversation_history.append({
-        "role": "user",
-        "content": user_message
-    })
+    conversation_history.append({"role": "user", "content": user_message})
 
     # Récupérer les erreurs actuelles
     errors = get_current_errors()
@@ -185,25 +185,24 @@ Si l'utilisateur demande de corriger les erreurs, propose-lui d'utiliser le bout
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                *conversation_history
+                *conversation_history,
             ],
             temperature=0.7,
-            max_tokens=500
+            max_tokens=500,
         )
 
         bot_message = response.choices[0].message.content
 
         # Ajouter la réponse du bot à l'historique
-        conversation_history.append({
-            "role": "assistant",
-            "content": bot_message
-        })
+        conversation_history.append({"role": "assistant", "content": bot_message})
 
-        return jsonify({
-            "message": bot_message,
-            "errors": errors,
-            "timestamp": datetime.now().isoformat()
-        })
+        return jsonify(
+            {
+                "message": bot_message,
+                "errors": errors,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
     except Exception as e:
         return jsonify({"error": f"Erreur IA: {e!s}"}), 500
@@ -233,6 +232,7 @@ def reset_conversation() -> dict:
 if __name__ == "__main__":
     print("🤖 Démarrage du chatbot CI/CD...")
     print("📊 Accédez à l'interface : http://localhost:5000")
-    print("🔑 Assurez-vous que GROQ_API_KEY est défini dans vos variables d'environnement")
+    print(
+        "🔑 Assurez-vous que GROQ_API_KEY est défini dans vos variables d'environnement"
+    )
     app.run(debug=True, host="0.0.0.0", port=5000)
-

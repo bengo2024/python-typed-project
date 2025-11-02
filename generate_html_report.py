@@ -1,4 +1,5 @@
 """Génère un rapport HTML des erreurs MyPy et Ruff."""
+
 import os
 from datetime import datetime
 
@@ -13,7 +14,17 @@ def generate_html_report(
     """Génère un rapport HTML stylisé des erreurs."""
     # Compter les erreurs
     mypy_errors = mypy_output.count("error:") if mypy_output else 0
-    ruff_errors = len([line for line in ruff_output.split("\n") if ":" in line and any(c in line for c in ["F", "E", "W", "I"])]) if ruff_output else 0
+    ruff_errors = (
+        len(
+            [
+                line
+                for line in ruff_output.split("\n")
+                if ":" in line and any(c in line for c in ["F", "E", "W", "I"])
+            ]
+        )
+        if ruff_output
+        else 0
+    )
     french_ok = "OK" in french_output or not french_output
 
     total_errors = mypy_errors + ruff_errors + (0 if french_ok else 1)
@@ -272,4 +283,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

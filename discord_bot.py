@@ -1,4 +1,5 @@
 """Bot Discord pour expliquer les erreurs CI/CD et déclencher l'auto-fix."""
+
 import os
 
 import discord
@@ -13,10 +14,7 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 REPO_NAME = os.getenv("GITHUB_REPOSITORY", "bengo2024/python-typed-project")
 
 # Initialiser le client Groq
-groq_client = OpenAI(
-    api_key=GROQ_API_KEY,
-    base_url="https://api.groq.com/openai/v1"
-)
+groq_client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # Initialiser le bot Discord
 intents = discord.Intents.default()
@@ -29,7 +27,7 @@ last_errors: dict[str, str] = {
     "ruff": "",
     "french": "",
     "commit_msg": "",
-    "author": ""
+    "author": "",
 }
 
 
@@ -50,49 +48,57 @@ async def show_errors(ctx: commands.Context) -> None:
     embed = discord.Embed(
         title="📊 Dernières Erreurs CI/CD",
         description=f"Commit: `{last_errors['commit_msg']}`\nAuteur: {last_errors['author']}",
-        color=discord.Color.red()
+        color=discord.Color.red(),
     )
 
     if last_errors["mypy"]:
-        mypy_preview = last_errors["mypy"][:500] + "..." if len(last_errors["mypy"]) > 500 else last_errors["mypy"]
+        mypy_preview = (
+            last_errors["mypy"][:500] + "..."
+            if len(last_errors["mypy"]) > 500
+            else last_errors["mypy"]
+        )
         embed.add_field(
-            name="🔍 MyPy (Types)",
-            value=f"```\n{mypy_preview}\n```",
-            inline=False
+            name="🔍 MyPy (Types)", value=f"```\n{mypy_preview}\n```", inline=False
         )
 
     if last_errors["ruff"]:
-        ruff_preview = last_errors["ruff"][:500] + "..." if len(last_errors["ruff"]) > 500 else last_errors["ruff"]
+        ruff_preview = (
+            last_errors["ruff"][:500] + "..."
+            if len(last_errors["ruff"]) > 500
+            else last_errors["ruff"]
+        )
         embed.add_field(
-            name="✨ Ruff (Style)",
-            value=f"```\n{ruff_preview}\n```",
-            inline=False
+            name="✨ Ruff (Style)", value=f"```\n{ruff_preview}\n```", inline=False
         )
 
     if last_errors["french"]:
         embed.add_field(
-            name="🇫🇷 Français",
-            value=f"```\n{last_errors['french']}\n```",
-            inline=False
+            name="🇫🇷 Français", value=f"```\n{last_errors['french']}\n```", inline=False
         )
 
     await ctx.send(embed=embed)
 
 
 @bot.command(name="expliquer")
-async def explain_error(ctx: commands.Context, *, error_type: str | None = None) -> None:
+async def explain_error(
+    ctx: commands.Context, *, error_type: str | None = None
+) -> None:
     """Explique une erreur spécifique en détail avec l'IA.
 
     Usage: !expliquer [mypy|ruff|french]
     """
     if not error_type:
-        await ctx.send("❌ Spécifie le type d'erreur: `!expliquer mypy`, `!expliquer ruff`, ou `!expliquer french`")
+        await ctx.send(
+            "❌ Spécifie le type d'erreur: `!expliquer mypy`, `!expliquer ruff`, ou `!expliquer french`"
+        )
         return
 
     error_type = error_type.lower()
 
     if error_type not in ["mypy", "ruff", "french"]:
-        await ctx.send("❌ Type d'erreur invalide. Utilise: `mypy`, `ruff`, ou `french`")
+        await ctx.send(
+            "❌ Type d'erreur invalide. Utilise: `mypy`, `ruff`, ou `french`"
+        )
         return
 
     if not last_errors[error_type]:
@@ -114,20 +120,20 @@ async def explain_error(ctx: commands.Context, *, error_type: str | None = None)
                     2. Avec des exemples concrets
                     3. En français
                     4. Avec des suggestions de correction
-                    Maximum 500 mots."""
+                    Maximum 500 mots.""",
                 },
                 {
                     "role": "user",
-                    "content": f"Explique cette erreur {error_type.upper()}:\n\n{last_errors[error_type]}"
-                }
+                    "content": f"Explique cette erreur {error_type.upper()}:\n\n{last_errors[error_type]}",
+                },
             ],
-            temperature=0.5
+            temperature=0.5,
         )
 
         explanation = response.choices[0].message.content
 
         # Découper en chunks si trop long (limite Discord: 2000 caractères)
-        chunks = [explanation[i:i+1900] for i in range(0, len(explanation), 1900)]
+        chunks = [explanation[i : i + 1900] for i in range(0, len(explanation), 1900)]
 
         await loading_msg.delete()
 
@@ -135,12 +141,14 @@ async def explain_error(ctx: commands.Context, *, error_type: str | None = None)
             embed = discord.Embed(
                 title=f"💡 Explication {error_type.upper()} ({i+1}/{len(chunks)})",
                 description=chunk,
-                color=discord.Color.blue()
+                color=discord.Color.blue(),
             )
             await ctx.send(embed=embed)
 
         # Proposer l'auto-fix
-        await ctx.send("💡 **Astuce**: Utilise `!autofix` pour corriger automatiquement les erreurs Ruff!")
+        await ctx.send(
+            "💡 **Astuce**: Utilise `!autofix` pour corriger automatiquement les erreurs Ruff!"
+        )
 
     except Exception as e:
         await loading_msg.delete()
@@ -155,7 +163,9 @@ async def trigger_autofix(ctx: commands.Context) -> None:
         return
 
     await ctx.send("🤖 Déclenchement de l'auto-fix...")
-    await ctx.send("📝 Une Pull Request va être créée avec les corrections automatiques.")
+    await ctx.send(
+        "📝 Une Pull Request va être créée avec les corrections automatiques."
+    )
     await ctx.send(f"🔗 Vérifie sur: https://github.com/{REPO_NAME}/pulls")
 
     # Note: L'auto-fix est déjà déclenché par le workflow GitHub Actions
@@ -169,32 +179,26 @@ async def help_command(ctx: commands.Context) -> None:
     embed = discord.Embed(
         title="🤖 Aide du Bot CI/CD",
         description="Bot pour expliquer les erreurs et déclencher les corrections",
-        color=discord.Color.green()
+        color=discord.Color.green(),
     )
 
     embed.add_field(
-        name="!erreurs",
-        value="Affiche les dernières erreurs détectées",
-        inline=False
+        name="!erreurs", value="Affiche les dernières erreurs détectées", inline=False
     )
 
     embed.add_field(
         name="!expliquer [type]",
         value="Explique une erreur en détail (mypy, ruff, french)",
-        inline=False
+        inline=False,
     )
 
     embed.add_field(
         name="!autofix",
         value="Déclenche l'auto-fix et crée une Pull Request",
-        inline=False
+        inline=False,
     )
 
-    embed.add_field(
-        name="!aide",
-        value="Affiche ce message d'aide",
-        inline=False
-    )
+    embed.add_field(name="!aide", value="Affiche ce message d'aide", inline=False)
 
     await ctx.send(embed=embed)
 
@@ -212,11 +216,13 @@ async def send_error_notification(channel_id: int, errors: dict[str, str]) -> No
     embed = discord.Embed(
         title="⚠️ Erreurs CI/CD Détectées",
         description=f"Commit: `{errors['commit_msg']}`\nAuteur: {errors['author']}",
-        color=discord.Color.orange()
+        color=discord.Color.orange(),
     )
 
     if errors.get("mypy"):
-        embed.add_field(name="🔍 MyPy", value="Erreurs de typage détectées", inline=True)
+        embed.add_field(
+            name="🔍 MyPy", value="Erreurs de typage détectées", inline=True
+        )
 
     if errors.get("ruff"):
         embed.add_field(name="✨ Ruff", value="Erreurs de style détectées", inline=True)
@@ -227,7 +233,7 @@ async def send_error_notification(channel_id: int, errors: dict[str, str]) -> No
     embed.add_field(
         name="💡 Actions disponibles",
         value="• `!erreurs` - Voir les détails\n• `!expliquer [type]` - Explication IA\n• `!autofix` - Corriger automatiquement",
-        inline=False
+        inline=False,
     )
 
     await channel.send(embed=embed)
@@ -249,4 +255,3 @@ def run_bot() -> None:
 
 if __name__ == "__main__":
     run_bot()
-

@@ -1,4 +1,5 @@
 """Envoie une notification Discord via webhook."""
+
 import os
 import sys
 from datetime import datetime
@@ -13,23 +14,33 @@ def send_discord_webhook(
     french_errors: str,
     commit_msg: str,
     author: str,
-    repo_url: str
+    repo_url: str,
 ) -> bool:
     """Envoie une notification Discord via webhook."""
     # Compter les erreurs
     mypy_count = mypy_errors.count("error:") if mypy_errors else 0
-    ruff_count = len([line for line in ruff_errors.split("\n") if ":" in line and any(c in line for c in ["F", "E", "W", "I"])]) if ruff_errors else 0
+    ruff_count = (
+        len(
+            [
+                line
+                for line in ruff_errors.split("\n")
+                if ":" in line and any(c in line for c in ["F", "E", "W", "I"])
+            ]
+        )
+        if ruff_errors
+        else 0
+    )
     french_ok = "OK" in french_errors or not french_errors
 
     total_errors = mypy_count + ruff_count + (0 if french_ok else 1)
 
     # Déterminer la couleur
     if total_errors == 0:
-        color = 0x28a745  # Vert
+        color = 0x28A745  # Vert
         title = "✅ CI/CD Réussi"
         emoji = "🎉"
     else:
-        color = 0xdc3545  # Rouge
+        color = 0xDC3545  # Rouge
         title = "❌ Erreurs CI/CD Détectées"
         emoji = "⚠️"
 
@@ -37,71 +48,75 @@ def send_discord_webhook(
     fields = []
 
     if mypy_count > 0:
-        mypy_preview = mypy_errors[:200] + "..." if len(mypy_errors) > 200 else mypy_errors
-        fields.append({
-            "name": f"🔍 MyPy ({mypy_count} erreur{'s' if mypy_count > 1 else ''})",
-            "value": f"```\n{mypy_preview}\n```",
-            "inline": False
-        })
+        mypy_preview = (
+            mypy_errors[:200] + "..." if len(mypy_errors) > 200 else mypy_errors
+        )
+        fields.append(
+            {
+                "name": f"🔍 MyPy ({mypy_count} erreur{'s' if mypy_count > 1 else ''})",
+                "value": f"```\n{mypy_preview}\n```",
+                "inline": False,
+            }
+        )
     else:
-        fields.append({
-            "name": "🔍 MyPy",
-            "value": "✅ Aucune erreur",
-            "inline": True
-        })
+        fields.append({"name": "🔍 MyPy", "value": "✅ Aucune erreur", "inline": True})
 
     if ruff_count > 0:
-        ruff_preview = ruff_errors[:200] + "..." if len(ruff_errors) > 200 else ruff_errors
-        fields.append({
-            "name": f"✨ Ruff ({ruff_count} erreur{'s' if ruff_count > 1 else ''})",
-            "value": f"```\n{ruff_preview}\n```",
-            "inline": False
-        })
+        ruff_preview = (
+            ruff_errors[:200] + "..." if len(ruff_errors) > 200 else ruff_errors
+        )
+        fields.append(
+            {
+                "name": f"✨ Ruff ({ruff_count} erreur{'s' if ruff_count > 1 else ''})",
+                "value": f"```\n{ruff_preview}\n```",
+                "inline": False,
+            }
+        )
     else:
-        fields.append({
-            "name": "✨ Ruff",
-            "value": "✅ Aucune erreur",
-            "inline": True
-        })
+        fields.append({"name": "✨ Ruff", "value": "✅ Aucune erreur", "inline": True})
 
     if not french_ok:
-        fields.append({
-            "name": "🇫🇷 Français",
-            "value": f"```\n{french_errors}\n```",
-            "inline": False
-        })
+        fields.append(
+            {
+                "name": "🇫🇷 Français",
+                "value": f"```\n{french_errors}\n```",
+                "inline": False,
+            }
+        )
     else:
-        fields.append({
-            "name": "🇫🇷 Français",
-            "value": "✅ Message parfait",
-            "inline": True
-        })
+        fields.append(
+            {"name": "🇫🇷 Français", "value": "✅ Message parfait", "inline": True}
+        )
 
     # Ajouter les actions disponibles si erreurs
     if total_errors > 0:
-        fields.append({
-            "name": "💡 Actions Disponibles",
-            "value": (
-                "• Utilise `!erreurs` pour voir les détails\n"
-                "• Utilise `!expliquer [type]` pour une explication IA\n"
-                "• Utilise `!autofix` pour corriger automatiquement\n"
-                f"• Vérifie le [rapport HTML]({repo_url}/actions)"
-            ),
-            "inline": False
-        })
+        fields.append(
+            {
+                "name": "💡 Actions Disponibles",
+                "value": (
+                    "• Utilise `!erreurs` pour voir les détails\n"
+                    "• Utilise `!expliquer [type]` pour une explication IA\n"
+                    "• Utilise `!autofix` pour corriger automatiquement\n"
+                    f"• Vérifie le [rapport HTML]({repo_url}/actions)"
+                ),
+                "inline": False,
+            }
+        )
 
     # Construire le payload
     payload = {
-        "embeds": [{
-            "title": f"{emoji} {title}",
-            "description": f"**Commit**: `{commit_msg}`\n**Auteur**: {author}\n**Total erreurs**: {total_errors}",
-            "color": color,
-            "fields": fields,
-            "footer": {
-                "text": f"CI/CD • {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
-            },
-            "url": f"{repo_url}/actions"
-        }]
+        "embeds": [
+            {
+                "title": f"{emoji} {title}",
+                "description": f"**Commit**: `{commit_msg}`\n**Auteur**: {author}\n**Total erreurs**: {total_errors}",
+                "color": color,
+                "fields": fields,
+                "footer": {
+                    "text": f"CI/CD • {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+                },
+                "url": f"{repo_url}/actions",
+            }
+        ]
     }
 
     # Envoyer le webhook
@@ -158,7 +173,7 @@ def main() -> None:
         french_errors,
         commit_msg,
         author,
-        repo_url
+        repo_url,
     )
 
     sys.exit(0 if success else 1)
@@ -166,4 +181,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

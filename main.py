@@ -1,17 +1,14 @@
-import os  # Import inutilisé pour tester le chatbot
-import sys  # Import inutilisé pour tester le chatbot
-import json  # Encore un import inutilisé
-import random  # Un quatrième import inutilisé
-
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
     return a + b
+
 
 def process_users(users: list[dict[str, str]]) -> str | None:
     """Traite une liste d'utilisateurs et retourne un message."""
     if not users:
         return None
     return f"Nombre d'utilisateurs : {len(users)}"
+
 
 def greet_user(name: str, language: str = "fr") -> str:
     """Salutation typée en français par défaut."""

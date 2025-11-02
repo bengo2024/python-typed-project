@@ -1,13 +1,12 @@
 """Script d'auto-correction des erreurs détectées par MyPy et Ruff."""
+
 import subprocess
 import sys
 
 
 def run_command(cmd: list[str]) -> tuple[int, str, str]:
     """Exécute une commande et retourne le code de retour, stdout et stderr."""
-    result = subprocess.run(
-        cmd, capture_output=True, text=True, encoding="utf-8"
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
     return result.returncode, result.stdout, result.stderr
 
 
@@ -42,9 +41,7 @@ def auto_fix_mypy() -> bool:
     print("🔧 Analyse des erreurs MyPy...")
 
     # MyPy ne peut pas auto-corriger, mais on peut détecter les erreurs
-    returncode, stdout, stderr = run_command(
-        ["python", "-m", "mypy", "main.py"]
-    )
+    returncode, stdout, stderr = run_command(["python", "-m", "mypy", "main.py"])
 
     if returncode == 0:
         print("✅ MyPy: Aucune erreur de typage")
@@ -59,9 +56,7 @@ def format_code() -> bool:
     """Formate le code avec Ruff."""
     print("✨ Formatage du code...")
 
-    returncode, stdout, stderr = run_command(
-        ["python", "-m", "ruff", "format", "."]
-    )
+    returncode, stdout, stderr = run_command(["python", "-m", "ruff", "format", "."])
 
     if returncode == 0:
         print("✅ Code formaté avec succès")
@@ -100,4 +95,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
