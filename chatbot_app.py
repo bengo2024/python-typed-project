@@ -89,19 +89,31 @@ def get_current_errors() -> dict[str, str]:
 
 def trigger_autofix() -> dict[str, str]:
     """Déclenche l'auto-fix et crée une Pull Request."""
+    print("🔧 Démarrage de l'auto-fix...")
+
     # Créer une branche auto-fix
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     branch_name = f"auto-fix/{timestamp}"
+    print(f"📝 Branche: {branch_name}")
 
     # Créer et checkout la branche
-    run_command(f"git checkout -b {branch_name}")
+    print("🌿 Création de la branche...")
+    checkout_output, checkout_code = run_command(f"git checkout -b {branch_name}")
+    print(f"Checkout output: {checkout_output[:200]}")
 
     # Appliquer les corrections Ruff directement (sans auto_fix.py)
+    print("🔍 Exécution de Ruff check --fix...")
     ruff_output, ruff_code = run_command("python -m ruff check --fix --unsafe-fixes .")
+    print(f"Ruff output: {ruff_output[:200]}")
+
+    print("✨ Exécution de Ruff format...")
     format_output, format_code = run_command("python -m ruff format .")
+    print(f"Format output: {format_output[:200]}")
 
     # Vérifier s'il y a des changements
+    print("📊 Vérification des changements...")
     diff_output, _ = run_command("git diff")
+    print(f"Diff length: {len(diff_output)} caractères")
 
     if diff_output.strip():
         # Il y a des changements, on commit et push
@@ -224,8 +236,22 @@ def get_errors() -> dict:
 @app.route("/api/autofix", methods=["POST"])
 def autofix() -> dict:
     """Déclenche l'auto-fix."""
-    result = trigger_autofix()
-    return jsonify(result)
+    try:
+        result = trigger_autofix()
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+
+        error_details = traceback.format_exc()
+        print(f"❌ ERREUR AUTO-FIX: {e}")
+        print(error_details)
+        return jsonify(
+            {
+                "success": False,
+                "message": f"❌ Erreur lors de l'auto-fix:\n\n{e!s}\n\nVoir les logs du serveur pour plus de détails.",
+                "branch": None,
+            }
+        ), 500
 
 
 @app.route("/api/reset", methods=["POST"])
