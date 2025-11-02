@@ -10,8 +10,9 @@ def generate_html_report(
     french_output: str,
     commit_msg: str,
     committer_name: str,
+    branch_name: str = "main",
 ) -> str:
-    """Génère un rapport HTML stylisé des erreurs."""
+    """Génère un rapport HTML stylisé des erreurs avec code couleur selon la gravité."""
     # Compter les erreurs
     mypy_errors = mypy_output.count("error:") if mypy_output else 0
     ruff_errors = (
@@ -29,15 +30,44 @@ def generate_html_report(
 
     total_errors = mypy_errors + ruff_errors + (0 if french_ok else 1)
 
-    # Déterminer le statut
+    # Déterminer la gravité et le code couleur
     if total_errors == 0:
-        status_color = "#28a745"
-        status_text = "✅ SUCCÈS"
+        status_color = "#28a745"  # Vert
+        status_text = "✅ SUCCÈS - PUSH AUTORISÉ"
         status_emoji = "🎉"
-    else:
-        status_color = "#dc3545"
-        status_text = "❌ ERREURS DÉTECTÉES"
+        severity = "success"
+        severity_label = "Aucun problème"
+    elif total_errors <= 3:
+        status_color = "#ffc107"  # Orange
+        status_text = "⚠️ AVERTISSEMENT - CORRECTIONS RECOMMANDÉES"
         status_emoji = "⚠️"
+        severity = "warning"
+        severity_label = "Gravité Faible"
+    elif total_errors <= 10:
+        status_color = "#fd7e14"  # Orange foncé
+        status_text = "🔴 ATTENTION - CORRECTIONS NÉCESSAIRES"
+        status_emoji = "🔴"
+        severity = "medium"
+        severity_label = "Gravité Moyenne"
+    else:
+        status_color = "#dc3545"  # Rouge
+        status_text = "❌ CRITIQUE - PUSH BLOQUÉ"
+        status_emoji = "❌"
+        severity = "critical"
+        severity_label = "Gravité Critique"
+
+    # Déterminer si Auto-Fix peut aider
+    ruff_fixable = ruff_errors > 0
+    autofix_message = ""
+    if ruff_fixable:
+        autofix_message = """
+        <div class="autofix-banner">
+            <h3>🤖 Auto-Fix Disponible !</h3>
+            <p>Certaines erreurs Ruff peuvent être corrigées automatiquement.</p>
+            <p><strong>Commande :</strong> <code>python -m ruff check --fix .</code></p>
+            <p>Ou utilisez le chatbot IA pour une correction automatique avec création de branche Git.</p>
+        </div>
+        """
 
     html = f"""
 <!DOCTYPE html>
@@ -175,6 +205,57 @@ def generate_html_report(
             font-size: 0.9em;
             margin-top: 10px;
         }}
+        .severity-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }}
+        .severity-badge.success {{
+            background: #d4edda;
+            color: #155724;
+        }}
+        .severity-badge.warning {{
+            background: #fff3cd;
+            color: #856404;
+        }}
+        .severity-badge.medium {{
+            background: #ffe5cc;
+            color: #cc5200;
+        }}
+        .severity-badge.critical {{
+            background: #f8d7da;
+            color: #721c24;
+        }}
+        .autofix-banner {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }}
+        .autofix-banner h3 {{
+            margin-bottom: 10px;
+        }}
+        .autofix-banner code {{
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }}
+        .branch-info {{
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }}
+        .branch-info strong {{
+            color: #0066cc;
+        }}
     </style>
 </head>
 <body>
@@ -183,6 +264,7 @@ def generate_html_report(
             <div class="emoji">{status_emoji}</div>
             <h1>{status_text}</h1>
             <p>Rapport CI/CD - {committer_name}</p>
+            <div class="severity-badge {severity}">{severity_label} - {total_errors} erreur(s)</div>
             <p class="timestamp">Généré le {datetime.now().strftime("%d/%m/%Y à %H:%M:%S")}</p>
         </div>
 
@@ -211,6 +293,11 @@ def generate_html_report(
                 <p><strong>Message :</strong> {commit_msg}</p>
                 <p><strong>Auteur :</strong> {committer_name}</p>
             </div>
+            <div class="branch-info">
+                <p><strong>🌿 Branche :</strong> {branch_name}</p>
+                <p><strong>📊 Statut :</strong> {'✅ Prêt à merger' if total_errors == 0 else '❌ Corrections nécessaires avant merge'}</p>
+            </div>
+            {autofix_message}
         </div>
 
         <div class="section">
@@ -268,10 +355,11 @@ def main() -> None:
 
     commit_msg = os.getenv("COMMIT_MSG", "N/A")
     committer_name = os.getenv("COMMITTER_NAME", "Développeur")
+    branch_name = os.getenv("GITHUB_REF_NAME", "main")
 
     # Générer le rapport HTML
     html_content = generate_html_report(
-        mypy_output, ruff_output, french_output, commit_msg, committer_name
+        mypy_output, ruff_output, french_output, commit_msg, committer_name, branch_name
     )
 
     # Sauvegarder le rapport
