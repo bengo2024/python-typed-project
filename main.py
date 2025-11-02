@@ -1,4 +1,5 @@
-
+import os  # Import inutilisé pour tester Ruff
+import sys  # Import inutilisé pour tester Ruff
 
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
