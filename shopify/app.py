@@ -4,6 +4,7 @@ Intégrée avec le système CI/CD
 """
 
 import hashlib
+import os
 from typing import Any
 
 from flask import (
@@ -20,8 +21,14 @@ from werkzeug.wrappers.response import Response
 from shopify.database import Database
 from shopify.models import CartItem, Order, OrderStatus, Product, User, UserRole
 
+# Obtenir le chemin du répertoire parent (racine du projet)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 app.secret_key = "shopify-secret-key-change-in-production"
 app.config["SESSION_TYPE"] = "filesystem"
 
