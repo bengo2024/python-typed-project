@@ -132,7 +132,7 @@ def trigger_autofix() -> dict[str, str]:
         run_command(f"git branch -D {branch_name}")
         return {
             "success": False,
-            "message": "ℹ️ Aucune correction automatique disponible.\n\n✨ Ruff n'a trouvé aucune erreur à corriger automatiquement.\n\n⚠️ Les erreurs MyPy nécessitent une correction manuelle car elles concernent les types.",
+            "message": "INFO: Aucune correction automatique disponible.\n\nRuff n'a trouvé aucune erreur à corriger automatiquement.\n\nLes erreurs MyPy nécessitent une correction manuelle car elles concernent les types.",
             "branch": None,
         }
 
