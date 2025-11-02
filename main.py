@@ -16,6 +16,11 @@ def greet_user(name: str, language: str = "fr") -> str:
         return f"Bonjour, {name} !"
     return f"Hello, {name} !"
 
+
+def multiply_numbers(x: int, y: int) -> int:
+    """Multiplie deux nombres entiers."""
+    return x * y
+
 if __name__ == "__main__":
     print(add_numbers(2, 3))
     users = [{"name": "Alice"}, {"name": "Bob"}]
