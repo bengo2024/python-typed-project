@@ -21,6 +21,7 @@ from werkzeug.wrappers.response import Response
 from shopify.database import Database
 from shopify.models import CartItem, Order, OrderStatus, Product, User, UserRole
 
+
 # Obtenir le chemin du répertoire parent (racine du projet)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,6 +35,19 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 # Initialiser la base de données
 db = Database()
+
+
+@app.context_processor
+def inject_globals() -> dict[str, Any]:
+    """Injecte des variables globales dans tous les templates."""
+    user = get_current_user()
+    cart = get_cart()
+    cart_count = sum(item.quantity for item in cart)
+
+    return {
+        "user": user,
+        "cart_count": cart_count,
+    }
 
 
 def hash_password(password: str) -> str:
@@ -339,6 +353,7 @@ def login() -> str | Any:
 
         return redirect(url_for("index"))
 
+    # user et cart_count sont automatiquement injectés par inject_globals()
     return render_template("shopify/login.html")
 
 
@@ -378,6 +393,7 @@ def register() -> str | Any:
 
         return redirect(url_for("index"))
 
+    # user et cart_count sont automatiquement injectés par inject_globals()
     return render_template("shopify/register.html")
 
 
