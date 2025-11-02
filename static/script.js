@@ -174,7 +174,7 @@ async function resetConversation() {
             if (index > 0) msg.remove();
         });
         
-        addMessage('✅ Conversation réinitialisée ! Posez-moi une nouvelle question.', 'bot');
+        addMessage('✅ Conversation réinitialisée ! Posez-moi une nouvelle question svp bg.', 'bot');
         
     } catch (error) {
         addMessage(`❌ Erreur lors de la réinitialisation: ${error.message}`, 'bot');
