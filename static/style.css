@@ -67,17 +67,40 @@ body {
 }
 
 /* Boutons */
+/* --- Boutons sobres et modernes --- */
 .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  display: inline-block;
+  background-color: #d62828; /* rouge belge élégant */
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  font-size: 1rem;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Effet sobre au survol */
+.btn:hover {
+  background-color: #b81f1f; /* ton plus foncé */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Variante bouton clair */
+.btn-light {
+  background-color: #fff;
+  color: #d62828;
+  border: 1px solid #d62828;
+}
+
+.btn-light:hover {
+  background-color: #f8f8f8;
+  color: #b81f1f;
+  transform: translateY(-2px);
 }
 
 .btn-primary {
