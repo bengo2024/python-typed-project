@@ -157,3 +157,4 @@ Ce projet est sous licence MIT.
 - OpenAI pour l'API GPT-3.5
 - La communauté Python pour MyPy et Ruff
 - GitHub pour GitHub Actions
+# Test Groq
