@@ -63,6 +63,38 @@
                 <h3>Livres</h3>
                 <p>Culture & Savoir</p>
             </a>
+
+            <a href="{{ url_for('products', category='Maison') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-couch"></i>
+                </div>
+                <h3>Maison</h3>
+                <p>Meuble & rangement</p>
+            </a>
+
+             <a href="{{ url_for('products', category='sports') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-football-ball"></i>
+                </div>
+                <h3>sports et loisirs</h3>
+                <p>equipements, vetements & chaussures</p>
+            </a>
+
+             <a href="{{ url_for('products', category='Alimentation') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-apple-alt"></i>
+                </div>
+                <h3>Alimentation et Boisson</h3>
+                <p>Produits alimentaires bio ou gourmets</p>
+            </a>
+
+             <a href="{{ url_for('products', category='Animaux') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-dog"></i>
+                </div>
+                <h3>Animaux</h3>
+                <p>Nourriture et accessoires pour chiens, chats, etc.</p>
+            </a>
         </div>
     </div>
 </section>
