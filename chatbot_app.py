@@ -45,7 +45,7 @@ def run_command(command: str) -> tuple[str, int]:
             cwd=REPO_PATH,
             timeout=30,
             encoding="utf-8",
-            errors="replace"  # Remplace les caractères invalides au lieu de crasher
+            errors="replace",  # Remplace les caractères invalides au lieu de crasher
         )
         return result.stdout + result.stderr, result.returncode
     except Exception as e:
@@ -176,7 +176,13 @@ Réponds de manière :
 4. En français
 5. Avec des emojis pour rendre la conversation agréable
 
-Si l'utilisateur demande de corriger les erreurs, propose-lui d'utiliser le bouton "Auto-Fix" pour les corrections automatiques.
+IMPORTANT - Ce que l'Auto-Fix peut faire :
+✅ L'Auto-Fix peut corriger UNIQUEMENT les erreurs Ruff (imports inutilisés, formatage, style)
+❌ L'Auto-Fix NE PEUT PAS corriger les erreurs MyPy (types manquants) - celles-ci nécessitent une correction manuelle
+
+Si l'utilisateur demande de corriger les erreurs :
+- Pour les erreurs Ruff : propose le bouton "Auto-Fix"
+- Pour les erreurs MyPy : explique qu'il faut les corriger manuellement et montre comment faire avec des exemples avant/après
 """
 
     # Appeler l'IA Groq
