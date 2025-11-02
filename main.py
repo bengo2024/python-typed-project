@@ -1,10 +1,10 @@
-from typing import List, Dict, Optional
+
 
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
     return a + b
 
-def process_users(users: List[Dict[str, str]]) -> Optional[str]:
+def process_users(users: list[dict[str, str]]) -> str | None:
     """Traite une liste d'utilisateurs et retourne un message."""
     if not users:
         return None

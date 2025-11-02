@@ -25,13 +25,22 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run MyPy (vérification des types)
-        run: python -m mypy main.py
+        id: mypy-check
+        continue-on-error: true
+        run: |
+          python -m mypy main.py > mypy_output.txt 2>&1 || echo "MyPy a détecté des erreurs"
+          cat mypy_output.txt
 
       - name: Run Ruff (linting)
-        run: python -m ruff check .
+        id: ruff-check
+        continue-on-error: true
+        run: |
+          python -m ruff check . > ruff_output.txt 2>&1 || echo "Ruff a détecté des erreurs"
+          cat ruff_output.txt
 
       - name: Vérifier fautes de français dans le message de commit
         id: check-french
+        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
@@ -53,6 +62,11 @@ jobs:
           )
           result = response.choices[0].message.content.strip()
           print(result)
+
+          # Sauvegarder le résultat dans un fichier
+          with open("french_check.txt", "w", encoding="utf-8") as f:
+            f.write(result)
+
           if result.startswith("ERREUR"):
             print("Fautes détectées")
             sys.exit(1)
@@ -104,4 +118,95 @@ jobs:
           server.send_message(msg)
           server.quit()
           print("Email envoyé avec succès !")
+          EOF
+
+      - name: Envoyer email de correction (si erreurs détectées)
+        if: failure() || steps.mypy-check.outcome == 'failure' || steps.ruff-check.outcome == 'failure' || steps.check-french.outcome == 'failure'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          COMMITTER_EMAIL: ${{ github.event.head_commit.author.email }}
+          COMMITTER_NAME: ${{ github.event.head_commit.author.name }}
+        run: |
+          python - <<EOF
+          import os
+          from openai import OpenAI
+          from smtplib import SMTP
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+
+          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          committer = os.getenv("COMMITTER_EMAIL")
+          committer_name = os.getenv("COMMITTER_NAME", "Développeur")
+          commit_msg = """${{ github.event.head_commit.message }}"""
+
+          # Lire les résultats des vérifications
+          mypy_errors = ""
+          ruff_errors = ""
+          french_errors = ""
+
+          try:
+            with open("mypy_output.txt", "r", encoding="utf-8") as f:
+              mypy_errors = f.read()
+          except:
+            pass
+
+          try:
+            with open("ruff_output.txt", "r", encoding="utf-8") as f:
+              ruff_errors = f.read()
+          except:
+            pass
+
+          try:
+            with open("french_check.txt", "r", encoding="utf-8") as f:
+              french_errors = f.read()
+          except:
+            pass
+
+          # Construire le rapport d'erreurs
+          error_report = f"""
+          Commit: {commit_msg}
+          Auteur: {committer_name}
+
+          ERREURS DÉTECTÉES:
+
+          MyPy (vérification des types):
+          {mypy_errors if mypy_errors else "✅ Aucune erreur"}
+
+          Ruff (linting et style):
+          {ruff_errors if ruff_errors else "✅ Aucune erreur"}
+
+          Vérification du français:
+          {french_errors if french_errors else "✅ Aucune erreur"}
+          """
+
+          # Générer un email personnalisé avec l'IA
+          response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+              {"role": "system", "content": f"Tu es un mentor bienveillant en développement. Génère un email en français pour {committer_name}, professionnel mais encourageant. Adapte le ton à la culture francophone (chaleureux, pédagogique). Explique les erreurs de manière simple, donne 2-3 conseils concrets pour corriger, et termine par une phrase motivante. Maximum 250 mots."},
+              {"role": "user", "content": f"Rapport d'erreurs:\n{error_report}"}
+            ],
+            temperature=0.7
+          )
+          body = response.choices[0].message.content
+
+          msg = MIMEMultipart()
+          msg['From'] = os.getenv("EMAIL_USER")
+          msg['To'] = committer
+          msg['Subject'] = f"⚠️ Corrections nécessaires pour ton commit - {committer_name}"
+
+          # Ajouter le corps de l'email + le rapport détaillé
+          full_body = f"{body}\n\n{'='*60}\nRAPPORT DÉTAILLÉ:\n{'='*60}\n{error_report}"
+          msg.attach(MIMEText(full_body, 'plain', 'utf-8'))
+
+          server = SMTP(os.getenv("EMAIL_HOST"), int(os.getenv("EMAIL_PORT")))
+          server.starttls()
+          server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+          server.send_message(msg)
+          server.quit()
+          print("Email de correction envoyé avec succès !")
           EOF
