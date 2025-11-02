@@ -1,0 +1,195 @@
+{% extends "shopify/base.html" %}
+
+{% block title %}Shopify - Accueil{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Bienvenue sur <span class="gradient-text">Shopify</span>
+            </h1>
+            <p class="hero-subtitle">
+                Découvrez nos produits de qualité avec une expérience d'achat exceptionnelle
+            </p>
+            <div class="hero-badges">
+                <span class="badge"><i class="fas fa-truck"></i> Livraison Gratuite</span>
+                <span class="badge"><i class="fas fa-shield-alt"></i> Paiement Sécurisé</span>
+                <span class="badge"><i class="fas fa-undo"></i> Retours Gratuits</span>
+            </div>
+            <div class="hero-cta">
+                <a href="{{ url_for('products') }}" class="btn-hero">
+                    <i class="fas fa-shopping-bag"></i> Découvrir nos produits
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Catégories Populaires</h2>
+        <div class="categories-grid">
+            <a href="{{ url_for('products', category='Électronique') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-laptop"></i>
+                </div>
+                <h3>Électronique</h3>
+                <p>Dernières technologies</p>
+            </a>
+            
+            <a href="{{ url_for('products', category='Mode') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-tshirt"></i>
+                </div>
+                <h3>Mode</h3>
+                <p>Tendances actuelles</p>
+            </a>
+            
+            <a href="{{ url_for('products', category='Gaming') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3>Gaming</h3>
+                <p>Pour les gamers</p>
+            </a>
+            
+            <a href="{{ url_for('products', category='Livres') }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3>Livres</h3>
+                <p>Culture & Savoir</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="products-section">
+    <div class="container">
+        <h2 class="section-title">Produits Populaires</h2>
+        
+        {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                            {% if product.stock < 10 %}
+                                <span class="product-badge badge-warning">Stock limité</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-category">{{ product.category }}</div>
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <p class="product-description">{{ product.description[:80] }}...</p>
+                            
+                            <div class="product-rating">
+                                {% for i in range(5) %}
+                                    <i class="fas fa-star {% if i < product.rating %}active{% endif %}"></i>
+                                {% endfor %}
+                                <span>({{ product.reviews_count }})</span>
+                            </div>
+                            
+                            <div class="product-footer">
+                                <div class="product-price">{{ "%.2f"|format(product.price) }} €</div>
+                                <div class="product-actions">
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-view">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-add-cart" {% if not product.is_available() %}disabled{% endif %}>
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="section-cta">
+                <a href="{{ url_for('products') }}" class="btn-secondary-large">
+                    Voir tous les produits <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>Aucun produit disponible</h3>
+                <p>Revenez bientôt pour découvrir nos nouveautés !</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h3>Livraison Rapide</h3>
+                <p>Livraison gratuite sous 48h pour toute commande</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3>Paiement Sécurisé</h3>
+                <p>Vos transactions sont 100% sécurisées</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Support 24/7</h3>
+                <p>Notre équipe est là pour vous aider</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3>Garantie Qualité</h3>
+                <p>Produits certifiés et garantis</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CI/CD Integration Banner -->
+<section class="cicd-banner">
+    <div class="container">
+        <div class="cicd-content">
+            <div class="cicd-icon">
+                <i class="fas fa-code-branch"></i>
+            </div>
+            <div class="cicd-text">
+                <h3>Application Intégrée avec CI/CD</h3>
+                <p>
+                    Cette application e-commerce est entièrement typée en Python et intégrée avec notre système CI/CD.
+                    Chaque commit est vérifié par MyPy et Ruff, avec notifications par email et assistance par chatbot.
+                </p>
+                <div class="cicd-badges">
+                    <span class="tech-badge"><i class="fas fa-check"></i> MyPy</span>
+                    <span class="tech-badge"><i class="fas fa-check"></i> Ruff</span>
+                    <span class="tech-badge"><i class="fas fa-check"></i> GitHub Actions</span>
+                    <span class="tech-badge"><i class="fas fa-check"></i> Auto-Fix</span>
+                    <span class="tech-badge"><i class="fas fa-check"></i> Chatbot IA</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

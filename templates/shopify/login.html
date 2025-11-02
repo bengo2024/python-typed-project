@@ -1,0 +1,128 @@
+{% extends "shopify/base.html" %}
+
+{% block title %}Connexion - Shopify{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="container">
+        <div class="auth-card">
+            <h1>Connexion</h1>
+            <p class="auth-subtitle">Connectez-vous pour accéder à votre compte</p>
+
+            <form method="post" class="auth-form">
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="email" name="email" required placeholder="votre@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+            </form>
+
+            <p class="auth-link">
+                Pas encore de compte ? <a href="{{ url_for('register') }}">Inscrivez-vous</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<style>
+.auth-page {
+    padding: 4rem 0;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+}
+
+.auth-card {
+    max-width: 450px;
+    margin: 0 auto;
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-card h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.auth-subtitle {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.form-group input {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-submit {
+    padding: 1rem;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-light);
+}
+
+.auth-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+

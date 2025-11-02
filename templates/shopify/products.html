@@ -1,0 +1,97 @@
+{% extends "shopify/base.html" %}
+
+{% block title %}Produits - Shopify{% endblock %}
+
+{% block content %}
+<section class="products-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                {% if current_category %}
+                    {{ current_category }}
+                {% elif search_query %}
+                    Résultats pour "{{ search_query }}"
+                {% else %}
+                    Tous les Produits
+                {% endif %}
+            </h1>
+            <p class="page-subtitle">{{ products|length }} produit(s) trouvé(s)</p>
+        </div>
+
+        {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                            {% if product.stock < 10 %}
+                                <span class="product-badge badge-warning">Stock limité</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-category">{{ product.category }}</div>
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <p class="product-description">{{ product.description[:100] }}...</p>
+                            
+                            <div class="product-rating">
+                                {% for i in range(5) %}
+                                    <i class="fas fa-star {% if i < product.rating %}active{% endif %}"></i>
+                                {% endfor %}
+                                <span>({{ product.reviews_count }})</span>
+                            </div>
+                            
+                            <div class="product-footer">
+                                <div class="product-price">{{ "%.2f"|format(product.price) }} €</div>
+                                <div class="product-actions">
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-view">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-add-cart" {% if not product.is_available() %}disabled{% endif %}>
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Aucun produit trouvé</h3>
+                <p>Essayez une autre recherche ou parcourez nos catégories</p>
+                <a href="{{ url_for('products') }}" class="btn-secondary-large" style="margin-top: 1rem;">
+                    Voir tous les produits
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+.products-page {
+    padding: 3rem 0;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}
+

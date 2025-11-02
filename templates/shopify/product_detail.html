@@ -1,0 +1,54 @@
+{% extends "shopify/base.html" %}
+{% block title %}{{ product.name }} - Shopify{% endblock %}
+{% block content %}
+<section class="product-detail-page">
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-image-large">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-details">
+                <div class="product-category">{{ product.category }}</div>
+                <h1>{{ product.name }}</h1>
+                <div class="product-rating">
+                    {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < product.rating %}active{% endif %}"></i>
+                    {% endfor %}
+                    <span>({{ product.reviews_count }} avis)</span>
+                </div>
+                <div class="product-price-large">{{ "%.2f"|format(product.price) }} €</div>
+                <p class="product-description-full">{{ product.description }}</p>
+                <div class="product-stock">
+                    {% if product.is_available() %}
+                        <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                        <span>En stock ({{ product.stock }} disponibles)</span>
+                    {% else %}
+                        <i class="fas fa-times-circle" style="color: var(--error-color);"></i>
+                        <span>Rupture de stock</span>
+                    {% endif %}
+                </div>
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
+                    <button type="submit" class="btn-add-large" {% if not product.is_available() %}disabled{% endif %}>
+                        <i class="fas fa-cart-plus"></i> Ajouter au panier
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+.product-detail-page { padding: 3rem 0; }
+.product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+.product-image-large img { width: 100%; border-radius: 20px; box-shadow: var(--shadow-lg); }
+.product-details { display: flex; flex-direction: column; gap: 1.5rem; }
+.product-details h1 { font-size: 2.5rem; font-weight: 700; color: var(--dark-color); }
+.product-price-large { font-size: 2.5rem; font-weight: 700; color: var(--primary-color); }
+.product-description-full { line-height: 1.8; color: var(--text-color); }
+.product-stock { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+.btn-add-large { width: 100%; padding: 1.25rem; background: var(--gradient); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+.btn-add-large:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-add-large:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 768px) { .product-detail { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+

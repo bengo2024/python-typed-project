@@ -1,0 +1,61 @@
+{% extends "shopify/base.html" %}
+
+{% block title %}Inscription - Shopify{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="container">
+        <div class="auth-card">
+            <h1>Inscription</h1>
+            <p class="auth-subtitle">Créez votre compte Shopify</p>
+
+            <form method="post" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name"><i class="fas fa-user"></i> Prénom</label>
+                        <input type="text" id="first_name" name="first_name" required placeholder="Jean">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last_name"><i class="fas fa-user"></i> Nom</label>
+                        <input type="text" id="last_name" name="last_name" required placeholder="Dupont">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="email" name="email" required placeholder="votre@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Créer mon compte
+                </button>
+            </form>
+
+            <p class="auth-link">
+                Déjà un compte ? <a href="{{ url_for('login') }}">Connectez-vous</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<style>
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
