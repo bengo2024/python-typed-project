@@ -1,6 +1,3 @@
-import os  # Import inutilisé - Ruff peut le supprimer automatiquement
-import sys  # Import inutilisé - Ruff peut le supprimer automatiquement
-import json  # Import inutilisé - Ruff peut le supprimer automatiquement
 
 
 def add_numbers(a: int, b: int) -> int:
