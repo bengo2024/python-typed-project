@@ -123,6 +123,7 @@ body {
     border-right: 1px solid var(--border-color);
     padding: 24px;
     overflow-y: auto;
+    max-height: 100%;
 }
 
 .errors-panel h2 {
@@ -170,15 +171,18 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
 }
 
 .chat-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-height: 0;
 }
 
 /* Messages */

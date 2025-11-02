@@ -95,28 +95,41 @@ def trigger_autofix() -> dict[str, str]:
     # Créer et checkout la branche
     run_command(f"git checkout -b {branch_name}")
 
-    # Appliquer les corrections Ruff
-    output, exit_code = run_command("python auto_fix.py")
+    # Appliquer les corrections Ruff directement (sans auto_fix.py)
+    ruff_output, ruff_code = run_command("python -m ruff check --fix --unsafe-fixes .")
+    format_output, format_code = run_command("python -m ruff format .")
 
-    if exit_code == 0:
-        # Commit et push
+    # Vérifier s'il y a des changements
+    diff_output, _ = run_command("git diff")
+
+    if diff_output.strip():
+        # Il y a des changements, on commit et push
         run_command("git add .")
-        run_command(f'git commit -m "🤖 Auto-Fix: Corrections automatiques via chatbot"')
-        run_command(f"git push origin {branch_name}")
+        commit_output, _ = run_command(f'git commit -m "🤖 Auto-Fix: Corrections automatiques via chatbot"')
+        push_output, push_code = run_command(f"git push origin {branch_name}")
 
         # Retourner à main
         run_command("git checkout main")
 
-        return {
-            "success": True,
-            "message": f"✅ Corrections appliquées avec succès !\n\nBranche créée : {branch_name}\n\nVous pouvez maintenant créer une Pull Request sur GitHub.",
-            "branch": branch_name
-        }
+        if push_code == 0:
+            return {
+                "success": True,
+                "message": f"✅ Corrections appliquées avec succès !\n\n📝 Changements :\n{ruff_output}\n\n🌿 Branche créée : {branch_name}\n\n🔗 Créez une Pull Request sur GitHub pour merger ces corrections.",
+                "branch": branch_name
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"❌ Erreur lors du push de la branche.\n\n{push_output}",
+                "branch": None
+            }
     else:
+        # Pas de changements, retourner à main
         run_command("git checkout main")
+        run_command(f"git branch -D {branch_name}")
         return {
             "success": False,
-            "message": "❌ Aucune correction automatique disponible.\n\nLes erreurs MyPy nécessitent une correction manuelle.",
+            "message": "ℹ️ Aucune correction automatique disponible.\n\n✨ Ruff n'a trouvé aucune erreur à corriger automatiquement.\n\n⚠️ Les erreurs MyPy nécessitent une correction manuelle car elles concernent les types.",
             "branch": None
         }
 
