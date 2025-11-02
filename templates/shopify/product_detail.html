@@ -39,16 +39,48 @@
 <style>
 .product-detail-page { padding: 3rem 0; }
 .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
-.product-image-large img { width: 100%; border-radius: 20px; box-shadow: var(--shadow-lg); }
-.product-details { display: flex; flex-direction: column; gap: 1.5rem; }
+.product-image-large img { width: 100%; border-radius: 20px; box-shadow: var(--shadow-lg); transition: transform 0.3s ease;}
+.product-details { display: flex; flex-direction: column; gap: 1.5rem;  background: var(--bg-light); /* Fond léger */ }
 .product-details h1 { font-size: 2.5rem; font-weight: 700; color: var(--dark-color); }
 .product-price-large { font-size: 2.5rem; font-weight: 700; color: var(--primary-color); }
 .product-description-full { line-height: 1.8; color: var(--text-color); }
 .product-stock { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
-.btn-add-large { width: 100%; padding: 1.25rem; background: var(--gradient); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-.btn-add-large:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-add-large {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Dégradé plus flashy */
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-add-large:hover:not(:disabled) { transform: translateY(-3px); box-shadow:  0 8px 20px rgba(0,0,0,0.2); }
 .btn-add-large:disabled { opacity: 0.5; cursor: not-allowed; }
-@media (max-width: 768px) { .product-detail { grid-template-columns: 1fr; } }
+.product-image-large img:hover {
+    transform: scale(1.05);
+}
+
+.product-category {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.product-rating i.active { color: #FFD700; } /* étoiles dorées */
+.product-rating i { color: #ccc; }
+
+
+@media (max-width: 768px) {
+    .product-detail {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+    .btn-add-large {
+        width: 100%;
+    }
+}
+
 </style>
 {% endblock %}
 
