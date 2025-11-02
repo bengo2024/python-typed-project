@@ -4,9 +4,11 @@ import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
+from flask.wrappers import Response
 from openai import OpenAI
 
 
@@ -31,7 +33,7 @@ if not GROQ_API_KEY:
 groq_client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # Stocker l'historique de conversation
-conversation_history: list[dict[str, str]] = []
+conversation_history: list[dict[str, Any]] = []
 
 
 def run_command(command: str) -> tuple[str, int]:
@@ -87,7 +89,7 @@ def get_current_errors() -> dict[str, str]:
     return errors
 
 
-def trigger_autofix() -> dict[str, str]:
+def trigger_autofix() -> dict[str, str | bool | None]:
     """Déclenche l'auto-fix et crée une Pull Request."""
     # Créer une branche auto-fix
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -144,9 +146,11 @@ def index() -> str:
 
 
 @app.route("/api/chat", methods=["POST"])
-def chat() -> dict:
+def chat() -> Response | tuple[Response, int]:
     """Endpoint pour discuter avec le chatbot."""
     data = request.json
+    if not data:
+        return jsonify({"error": "Données manquantes"}), 400
     user_message = data.get("message", "")
 
     if not user_message:
@@ -191,13 +195,13 @@ Si l'utilisateur demande de corriger les erreurs :
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                *conversation_history,
+                *conversation_history,  # type: ignore[list-item]
             ],
             temperature=0.7,
             max_tokens=500,
         )
 
-        bot_message = response.choices[0].message.content
+        bot_message = response.choices[0].message.content or "Désolé, je n'ai pas pu générer de réponse."
 
         # Ajouter la réponse du bot à l'historique
         conversation_history.append({"role": "assistant", "content": bot_message})
@@ -215,21 +219,21 @@ Si l'utilisateur demande de corriger les erreurs :
 
 
 @app.route("/api/errors", methods=["GET"])
-def get_errors() -> dict:
+def get_errors() -> Response:
     """Récupère les erreurs actuelles."""
     errors = get_current_errors()
     return jsonify(errors)
 
 
 @app.route("/api/autofix", methods=["POST"])
-def autofix() -> dict:
+def autofix() -> Response:
     """Déclenche l'auto-fix."""
     result = trigger_autofix()
     return jsonify(result)
 
 
 @app.route("/api/reset", methods=["POST"])
-def reset_conversation() -> dict:
+def reset_conversation() -> Response:
     """Réinitialise la conversation."""
     conversation_history.clear()
     return jsonify({"message": "Conversation réinitialisée"})
