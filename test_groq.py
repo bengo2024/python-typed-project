@@ -22,7 +22,7 @@ def test_groq_api() -> None:
         )
 
         response = client.chat.completions.create(
-            model="llama-3.1-70b-versatile",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "user", "content": "Dis bonjour en français"}
             ]
