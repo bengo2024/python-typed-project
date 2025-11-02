@@ -16,4 +16,5 @@ echo.
 echo Appuyez sur CTRL+C pour arreter le serveur
 echo.
 python -m shopify.app
+pause
 

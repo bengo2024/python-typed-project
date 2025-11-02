@@ -21,6 +21,7 @@ from werkzeug.wrappers.response import Response
 from shopify.database import Database
 from shopify.models import CartItem, Order, OrderStatus, Product, User, UserRole
 
+
 # Obtenir le chemin du répertoire parent (racine du projet)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -320,31 +321,40 @@ def orders() -> str | Any:
 @app.route("/login", methods=["GET", "POST"])
 def login() -> str | Any:
     """Page de connexion."""
+    from shopify.app import get_cart  # si ce n’est pas déjà importé
+
+    cart = get_cart()  # récupère le panier actuel
+    cart_count = sum(item.quantity for item in cart)  # calcul du nombre d'articles
+
     if request.method == "POST":
         email = request.form.get("email", "")
         password = request.form.get("password", "")
 
         if not email or not password:
             flash("Email et mot de passe requis", "error")
-            return render_template("shopify/login.html")
+            return render_template("shopify/login.html", cart_count=cart_count)
 
         user = db.get_user_by_email(email)
 
         if not user or user.password_hash != hash_password(password):
             flash("Email ou mot de passe incorrect", "error")
-            return render_template("shopify/login.html")
+            return render_template("shopify/login.html", cart_count=cart_count)
 
         session["user_email"] = user.email
         flash(f"Bienvenue {user.first_name} !", "success")
 
         return redirect(url_for("index"))
 
-    return render_template("shopify/login.html")
+    # GET request
+    return render_template("shopify/login.html", cart_count=cart_count)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register() -> str | Any:
     """Page d'inscription."""
+    cart = get_cart()
+    cart_count = sum(item.quantity for item in cart)
+
     if request.method == "POST":
         email = request.form.get("email", "")
         password = request.form.get("password", "")
@@ -353,17 +363,15 @@ def register() -> str | Any:
 
         if not all([email, password, first_name, last_name]):
             flash("Tous les champs sont requis", "error")
-            return render_template("shopify/register.html")
+            return render_template("shopify/register.html", cart_count=0)
 
-        # Vérifier si l'email existe déjà
         existing_user = db.get_user_by_email(email)
         if existing_user:
             flash("Cet email est déjà utilisé", "error")
-            return render_template("shopify/register.html")
+            return render_template("shopify/register.html", cart_count=0)
 
-        # Créer l'utilisateur
         user = User(
-            id=0,  # Sera généré par la base de données
+            id=0,
             email=email,
             password_hash=hash_password(password),
             first_name=first_name,
@@ -372,13 +380,12 @@ def register() -> str | Any:
         )
 
         db.add_user(user)
-
         session["user_email"] = email
         flash(f"Compte créé avec succès ! Bienvenue {first_name} !", "success")
 
         return redirect(url_for("index"))
 
-    return render_template("shopify/register.html")
+    return render_template("shopify/register.html", cart_count=0)
 
 
 @app.route("/logout")
