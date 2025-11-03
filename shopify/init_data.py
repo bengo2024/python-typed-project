@@ -1,8 +1,6 @@
 """
 Script d'initialisation de la base de données avec des données de démonstration
 """
-
-
 import hashlib
 
 from shopify.database import Database
@@ -13,13 +11,10 @@ def hash_password(password: str) -> str:
     """Hash un mot de passe."""
     return hashlib.sha256(password.encode()).hexdigest()
 
-
 def init_demo_data() -> None:
     """Initialise la base de données avec des données de démonstration."""
     db = Database()
-
     print("🔧 Initialisation de la base de données Shopify...")
-
     # Créer un utilisateur admin
     admin = User(
         id=0,
@@ -29,15 +24,13 @@ def init_demo_data() -> None:
         last_name="Shopify",
         role=UserRole.ADMIN,
     )
-
     # Vérifier si l'admin existe déjà
     existing_admin = db.get_user_by_email("admin@shopify.com")
     if not existing_admin:
         db.add_user(admin)
         print("✅ Utilisateur admin créé (admin@shopify.com / admin123)")
     else:
-        print("ℹ️  Utilisateur admin déjà existant")
-
+        print("Info: Utilisateur admin déjà existant")
     # Créer un utilisateur client
     customer = User(
         id=0,
@@ -47,14 +40,12 @@ def init_demo_data() -> None:
         last_name="Dupont",
         role=UserRole.CUSTOMER,
     )
-
     existing_customer = db.get_user_by_email("client@example.com")
     if not existing_customer:
         db.add_user(customer)
         print("✅ Utilisateur client créé (client@example.com / client123)")
     else:
-        print("ℹ️  Utilisateur client déjà existant")
-
+        print("Info: Utilisateur client déjà existant")
     # Produits de démonstration
     demo_products = [
         Product(
@@ -190,24 +181,19 @@ def init_demo_data() -> None:
             reviews_count=178,
         ),
     ]
-
     # Ajouter les produits s'ils n'existent pas déjà
     existing_products = db.get_all_products()
-
     if len(existing_products) == 0:
         for product in demo_products:
             db.add_product(product)
         print(f"✅ {len(demo_products)} produits de démonstration ajoutés")
     else:
-        print(f"ℹ️  {len(existing_products)} produits déjà existants")
-
+        print(f"Info: {len(existing_products)} produits déjà existants")
     print("\n🎉 Initialisation terminée !")
     print("\n📝 Comptes de test :")
-    print("   Admin: admin@shopify.com / admin123")
-    print("   Client: client@example.com / client123")
+    print(" Admin: admin@shopify.com / admin123")
+    print(" Client: client@example.com / client123")
     print("\n🚀 Lancez l'application avec: python -m shopify.app")
-
 
 if __name__ == "__main__":
     init_demo_data()
-

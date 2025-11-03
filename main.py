@@ -1,12 +1,8 @@
-import os  # Import inutilisé - Ruff peut le supprimer automatiquement
-import sys  # Import inutilisé - Ruff peut le supprimer automatiquement
-import json  # Import inutilisé - Ruff peut le supprimer automatiquement
-
-
 def add_numbers(a: int, b: int) -> int:
     """Ajoute deux nombres entiers."""
     return a + b
 
+def hello(name: str) -> str: return f"Hi {name}"
 
 def process_users(users: list[dict[str, str]]) -> str | None:
     """Traite une liste d'utilisateurs et retourne un message."""
@@ -34,13 +30,13 @@ def divide_numbers(a: float, b: float) -> float:
     return a / b
 
 
-def fonction_sans_types(x, y):
-    """Fonction sans annotations de types - va générer une erreur MyPy."""
+def fonction_sans_types(x: int, y: int) -> int:
+    """Fonction avec annotations de types ajoutées pour MyPy."""
     return x + y
 
 
-def test_discord_notification(x, y):
-    """Fonction sans types pour tester Discord + MyPy."""
+def test_discord_notification(x: int, y: int) -> int:
+    """Fonction avec types pour tester Discord + MyPy."""
     return x * y
 
 
