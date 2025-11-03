@@ -376,12 +376,20 @@ def register() -> str | Any:
 
         if not all([email, password, first_name, last_name]):
             flash("Tous les champs sont requis", "error")
+<<<<<<< HEAD
             return render_template("shopify/register.html", cart_count=cart_count)
+=======
+            return render_template("shopify/register.html", cart_count=0)
+>>>>>>> fc22cb7 (Correction des erreurs : ajout de cart_count, fix des templates, formulaire d'inscription,formulaire de connexion, gestion du panier et DB)
 
         existing_user = db.get_user_by_email(email)
         if existing_user:
             flash("Cet email est déjà utilisé", "error")
+<<<<<<< HEAD
             return render_template("shopify/register.html", cart_count=cart_count)
+=======
+            return render_template("shopify/register.html", cart_count=0)
+>>>>>>> fc22cb7 (Correction des erreurs : ajout de cart_count, fix des templates, formulaire d'inscription,formulaire de connexion, gestion du panier et DB)
 
         user = User(
             id=0,
@@ -398,7 +406,11 @@ def register() -> str | Any:
 
         return redirect(url_for("index"))
 
+<<<<<<< HEAD
     return render_template("shopify/register.html", cart_count=cart_count)
+=======
+    return render_template("shopify/register.html", cart_count=0)
+>>>>>>> fc22cb7 (Correction des erreurs : ajout de cart_count, fix des templates, formulaire d'inscription,formulaire de connexion, gestion du panier et DB)
 
 
 @app.route("/logout")
