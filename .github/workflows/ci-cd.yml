@@ -2,9 +2,9 @@ name: CI/CD Python Typé + IA Français
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main , feature/*, devin ]
   pull_request:
-    branches: [ main ]
+    branches: [ main , feature/*, devin ]
 
 jobs:
   check-and-email:
