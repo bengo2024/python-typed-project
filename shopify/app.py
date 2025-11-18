@@ -479,4 +479,3 @@ def admin_add_product() -> Any:
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
-
